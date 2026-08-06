@@ -1,0 +1,126 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --dot: rgba(21, 27, 38, 0.09);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    /* The nav is sticky; anchor targets shouldn't hide underneath it. */
+    scroll-padding-top: 92px;
+  }
+
+  body {
+    @apply bg-canvas text-ink font-sans antialiased;
+  }
+
+  /* Visible, high-contrast focus for every interactive element. */
+  :focus-visible {
+    outline: 2px solid theme("colors.node.agent");
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+
+  ::selection {
+    background: rgba(109, 74, 255, 0.18);
+  }
+}
+
+@layer components {
+  .shell {
+    @apply mx-auto w-full max-w-[1200px] px-5 sm:px-8;
+  }
+
+  /* The canvas grid: dot paper, the thing every workflow editor sits on. */
+  .dotgrid {
+    background-image: radial-gradient(var(--dot) 1px, transparent 1px);
+    background-size: 22px 22px;
+    background-position: -1px -1px;
+  }
+
+  .eyebrow {
+    @apply font-mono text-[11px] uppercase tracking-[0.18em] text-ink-muted;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-[10px] px-5 py-3 font-medium
+           transition-[transform,background-color,border-color,box-shadow] duration-150
+           active:translate-y-[1px] disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .btn-solid {
+    @apply btn bg-ink text-white shadow-node hover:bg-[#232C3C];
+  }
+
+  .btn-ghost {
+    @apply btn border border-line-strong bg-paper text-ink hover:border-ink-muted hover:bg-white;
+  }
+
+  .btn-agent {
+    @apply btn bg-node-agent text-white shadow-node hover:bg-[#5D3AF0];
+  }
+
+  .btn-sm {
+    @apply px-3.5 py-2 text-sm;
+  }
+
+  .card {
+    @apply rounded-node border border-line bg-paper shadow-node;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-line bg-paper px-3 py-1
+           font-mono text-[11px] uppercase tracking-[0.12em] text-ink-soft;
+  }
+
+  /* Node "port" — the little connector dot on a workflow node. */
+  .port {
+    @apply block h-2 w-2 rounded-full border-2 border-paper;
+  }
+
+  .placeholder {
+    @apply text-ink-muted;
+  }
+}
+
+@layer utilities {
+  .mask-fade-x {
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 8%,
+      #000 92%,
+      transparent
+    );
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 8%,
+      #000 92%,
+      transparent
+    );
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Honour the OS setting: nothing moves on its own for people who asked it not to. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
