@@ -196,8 +196,44 @@ heuristic path and says so on screen.
 `components/demo-surface.tsx` is the dispatch point, and `DemoRunner`'s
 `execute` / `renderResult` props are the seam.
 
-Tests: `npm test` (Vitest, 26 cases over the four functions and the
-orchestrator, including the model path, a network failure, and a refusal).
+### Taking the draft with you
+
+Two exits from the proposal panel, both built without new dependencies.
+
+**Download PDF** renders the proposal as a standalone HTML document in a hidden
+iframe and opens the browser's print dialog, where "Save as PDF" is a
+destination. Chosen over jsPDF/pdf-lib deliberately: no ~350KB added to a
+landing-page bundle, and the output is real selectable text with proper page
+breaks rather than a canvas raster. The tradeoff is a print dialog instead of a
+one-click download — if that matters more, replace `printProposal()` in
+`lib/demo/proposal/print.ts`; the UI calls one function.
+
+**Email this to me** posts to `/api/send-draft`, which sends one message via
+Resend. Set `RESEND_API_KEY` to enable it; without it the route returns 503 and
+the button says so rather than failing silently.
+
+That route is a public endpoint that puts mail in a stranger's inbox, so it is
+deliberately narrow:
+
+- the body is **rebuilt server-side** from structured fields — the client never
+  supplies markup, and every value is escaped and length-capped
+- subject and from-address are **fixed**, never visitor-controlled
+- rate limited per IP **and** per recipient (3/hour each), so neither a sender
+  nor a victim can be hammered
+- 32KB request cap, one recipient per request
+- every email carries a footer naming the origin and stating it's a demo draft
+
+The real backstop is Resend's own domain verification: until you verify a
+domain, `onboarding@resend.dev` only delivers to your own account address. Leave
+`RESEND_FROM` unset until you've thought about who can mail whom.
+
+**TODO before heavy traffic:** the limiter is an in-process Map, so it's
+per-instance on serverless — same caveat as the order store. Move the counter to
+Redis/KV; `checkRateLimit()` is the whole surface that changes.
+
+Tests: `npm test` (Vitest, 44 cases — the four pipeline functions and the
+orchestrator including the model path, a network failure and a refusal; the
+print document; and the email sanitiser, escaping and rate limiter).
 
 ---
 
@@ -247,6 +283,7 @@ app/
   api/checkout/route.ts        create order → dynamic payment request
   api/orders/[id]/route.ts     status polling
   api/orders/[id]/claim/route.ts   TEMPORARY "I've paid"
+  api/send-draft/route.ts      emails one proposal draft via Resend
   api/webhooks/{revolut,paymongo,hitpay}/route.ts
 components/                    sections + the Buy/Try modals
   demo-surface.tsx             picks a product's demo; the seam for new ones

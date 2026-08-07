@@ -3,7 +3,10 @@
 import { useState } from "react";
 
 import { FitPill } from "@/components/proposal/fit-pill";
+import { SendDraft } from "@/components/proposal/send-draft";
+import { printProposal } from "@/lib/demo/proposal/print";
 import type { ProposalRun } from "@/lib/demo/proposal/types";
+import { SITE } from "@/lib/site";
 
 /**
  * What node 04 produces, rendered as the three things a proposal actually is:
@@ -111,9 +114,23 @@ export function ProposalOutput({ run }: { run: ProposalRun }) {
               : "offline draft · no key"}
           </span>
         </div>
-        <button type="button" onClick={copy} className="btn-ghost btn-sm">
-          {copied ? "Copied" : "Copy proposal"}
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button type="button" onClick={copy} className="btn-ghost btn-sm">
+            {copied ? "Copied" : "Copy"}
+          </button>
+          <button
+            type="button"
+            className="btn-ghost btn-sm"
+            onClick={() =>
+              printProposal(run, {
+                siteName: SITE.name,
+                title: `Proposal draft — ${SITE.name}`,
+              })
+            }
+          >
+            Download PDF
+          </button>
+        </div>
       </header>
 
       {run.warning ? (
@@ -264,6 +281,10 @@ export function ProposalOutput({ run }: { run: ProposalRun }) {
           In the real workflow these are rows with send-at timestamps, swept by a
           cron job — and cancelled the moment the client replies.
         </p>
+      </Section>
+
+      <Section kicker="take it with you">
+        <SendDraft run={run} />
       </Section>
     </div>
   );
