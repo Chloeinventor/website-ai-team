@@ -4,32 +4,32 @@ const NODES = [
     y: 18,
     accent: "#E08A17",
     kind: "trigger",
-    title: "Form submitted",
-    detail: "webhook · instant",
+    title: "Invoice arrives",
+    detail: "mailbox · instant",
   },
   {
     x: 136,
     y: 116,
-    accent: "#0E9D93",
-    kind: "action",
-    title: "Enrich company",
-    detail: "domain → firmographics",
+    accent: "#6D4AFF",
+    kind: "agent",
+    title: "Read the invoice",
+    detail: "lane, charges, units",
   },
   {
     x: 260,
     y: 214,
-    accent: "#6D4AFF",
-    kind: "agent",
-    title: "Score against ICP",
-    detail: "your rules, in English",
+    accent: "#0E9D93",
+    kind: "action",
+    title: "Check the rate card",
+    detail: "your contract, your caps",
   },
   {
     x: 384,
     y: 312,
     accent: "#EC5A38",
     kind: "output",
-    title: "Book · nurture · decline",
-    detail: "always writes back",
+    title: "Dispute pack",
+    detail: "sheet + drafted email",
   },
 ] as const;
 
@@ -48,7 +48,7 @@ export function WorkflowCanvas({ className = "" }: { className?: string }) {
       viewBox="0 0 560 400"
       className={`h-auto w-full ${className}`}
       role="img"
-      aria-label="A four-node automation workflow: a form submission triggers company enrichment, an agent scores the lead against your ideal customer profile, and the last node books, nurtures, or declines."
+      aria-label="A four-node automation workflow: a freight invoice arrives, an agent reads its charge lines, the next node checks them against your rate card, and the last node produces a dispute pack."
     >
       <defs>
         <pattern id="dots" width="22" height="22" patternUnits="userSpaceOnUse">
@@ -158,10 +158,10 @@ export function WorkflowCanvas({ className = "" }: { className?: string }) {
         />
         <circle cx="30" cy="351" r="4" fill="#0E9D93" className="animate-pulseNode" />
         <text x="44" y="347" className="fill-ink font-mono" fontSize="10">
-          [214] runs this week
+          [£18,400] recovered this quarter
         </text>
         <text x="44" y="361" className="fill-ink-muted font-mono" fontSize="9">
-          last one 38s ago · 0 errors
+          [214] invoices checked · 0 errors
         </text>
       </g>
     </svg>

@@ -1,10 +1,10 @@
 const CLIENTS = [
-  { name: "[Northwind Ops]", stat: "+140% qualified leads" },
-  { name: "[Kettle & Co]", stat: "9 hrs/week back" },
-  { name: "[Baseline Legal]", stat: "3× faster proposals" },
-  { name: "[Harbour Freight]", stat: "0 missed alerts in [6 mo]" },
-  { name: "[Studio Meridian]", stat: "[£4.2k] of admin cut" },
-  { name: "[Pilcrow Media]", stat: "reply time 4h → 6 min" },
+  { name: "[Northwind Freight]", stat: "[£18.4k] recovered in [Q1]" },
+  { name: "[Harbour Lines]", stat: "[92%] of invoices auto-cleared" },
+  { name: "[Meridian Logistics]", stat: "POD chase [11 days → 2]" },
+  { name: "[Kettle Distribution]", stat: "carrier review, [0] hours" },
+  { name: "[Pilcrow Haulage]", stat: "[3.1%] of spend disputed" },
+  { name: "[Baseline 3PL]", stat: "quotes out in [40 min]" },
 ];
 
 /**

@@ -23,12 +23,12 @@ export function TryItWidget() {
         <div className="mx-auto max-w-2xl text-center">
           <p className="eyebrow">Try it, right here</p>
           <h2 className="mt-3 text-section font-semibold">
-            Give it your worst lead. Watch it decide.
+            Paste a real invoice. Watch it find the money.
           </h2>
           <p className="mt-4 text-lg text-ink-soft">
             This is {FLAGSHIP.name} running on whatever you paste in — the same
-            four nodes you&apos;d buy, scoring against the same rules. No signup,
-            no card, and nothing leaves your browser.
+            four nodes you&apos;d buy, checking against the same rate card. No
+            signup, no card, and nothing leaves your browser.
           </p>
         </div>
 
@@ -62,9 +62,9 @@ export function TryItWidget() {
         </div>
 
         <p className="mx-auto mt-6 max-w-2xl text-center font-mono text-[11px] leading-relaxed text-ink-muted">
-          Honest footnote: this sandbox simulates the run so you can poke at it
-          instantly. Buy it and the same four nodes run against your real inbox,
-          CRM and calendar.
+          Honest footnote: this runs the real audit against a placeholder rate
+          card. Buy it and it runs against yours, straight off the invoices in
+          your mailbox.
         </p>
       </div>
     </section>

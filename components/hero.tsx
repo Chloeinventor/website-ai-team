@@ -13,18 +13,18 @@ export function Hero() {
         <div>
           <p className="chip">
             <span className="h-1.5 w-1.5 rounded-full bg-node-action" />
-            [4] workflows · built solo · shipped this quarter
+            [4] workflows · built for freight · shipped this quarter
           </p>
 
           <h1 className="mt-5 text-balance text-display font-semibold">
-            Buy an AI workflow that does the job you keep putting off.
+            Stop paying carriers more than you agreed to.
           </h1>
 
           <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink-soft">
-            Ready-made automations for the boring, expensive parts of running a
-            business — lead qualification, inbox triage, proposals, ops alerts.
-            Run one on your own messy data right here, then buy it if it earns
-            it.
+            Ready-made automations for the parts of logistics that quietly leak
+            money — invoice audit, carrier scorecards, POD chasing, quoting.
+            Paste a real invoice below and watch one find the overcharge, before
+            you pay for anything.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">

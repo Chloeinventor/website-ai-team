@@ -9,22 +9,22 @@ const STEPS = [
     id: "discover",
     label: "Discover",
     time: "[2 min]",
-    headline: "Pick the job you're sick of doing.",
+    headline: "Pick the leak you want closed.",
     body: "Four workflows, each named after the outcome rather than the tech. If none of them fit, that's what the custom build is for.",
   },
   {
     id: "configure",
     label: "Configure",
     time: "[10 min]",
-    headline: "Say what good looks like, in English.",
-    body: "The rules are prose, not a scoring matrix. Change your mind later by editing a sentence — no rebuilding a filter tree.",
+    headline: "Fill in your rate card once.",
+    body: "Lanes, surcharge caps, agreed accessorials, free time. It's a spreadsheet, not a config file — the same one your finance team already argues with carriers from.",
   },
   {
     id: "try",
     label: "Try",
     time: "[15 sec]",
-    headline: "Run it on your own messy data.",
-    body: "Paste something real and watch every node work. If the verdict is wrong, you found that out before paying, which is the point.",
+    headline: "Run it on a real invoice.",
+    body: "Paste something you actually received and watch every node work. If it finds nothing, you found that out before paying, which is the point.",
   },
   {
     id: "deploy",
@@ -148,22 +148,22 @@ function Panel({ id }: { id: (typeof STEPS)[number]["id"] }) {
 
   if (id === "configure") {
     return (
-      <Frame title="rules.md">
+      <Frame title="rate-card.xlsx">
         <div className="space-y-3 px-3 py-3 font-mono text-[12.5px] leading-relaxed">
-          <p className="text-ink-muted"># Who&apos;s worth a call</p>
+          <p className="text-ink-muted"># what you actually agreed</p>
           <p>
-            <span className="text-node-agent">book</span> if they name a budget{" "}
-            <span className="text-ink-muted">or</span> a deadline
+            <span className="text-node-agent">rotterdam → felixstowe</span>{" "}
+            <span className="text-ink-muted">=</span> [1,300.00]
           </p>
           <p>
-            <span className="text-node-trigger">nurture</span> if they&apos;re
-            vague but real
+            <span className="text-node-action">fuel cap</span>{" "}
+            <span className="text-ink-muted">=</span> [12%] of base
           </p>
           <p>
-            <span className="text-node-output">decline</span> if it&apos;s a
-            vendor pitch
+            <span className="text-node-trigger">free time</span>{" "}
+            <span className="text-ink-muted">=</span> [5] days
           </p>
-          <p className="text-ink-muted"># edit this sentence, not a filter tree</p>
+          <p className="text-ink-muted"># anything else gets queried</p>
           <p className="text-ink-muted">
             <span className="animate-caret">▌</span>
           </p>
@@ -185,8 +185,8 @@ function Panel({ id }: { id: (typeof STEPS)[number]["id"] }) {
           ))}
           <li className="flex items-baseline gap-2.5 border-t border-line pt-2 font-mono text-[12px]">
             <span className="text-ink-muted">→</span>
-            <span className="flex-1">verdict: book the call</span>
-            <span className="text-ink-muted">38s</span>
+            <span className="flex-1">verdict: [£667.00] recoverable</span>
+            <span className="text-ink-muted">11s</span>
           </li>
         </ol>
       </Frame>

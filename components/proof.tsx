@@ -1,27 +1,27 @@
 const TESTIMONIALS = [
   {
-    stat: "+140%",
-    statLabel: "qualified leads / month",
+    stat: "[£18.4k]",
+    statLabel: "recovered in one quarter",
     quote:
-      "We were losing inbound in a spreadsheet nobody opened. Now the good ones are on my calendar before I've made coffee, and the vendor spam never reaches me.",
+      "We assumed our rates were being honoured because checking every invoice by hand was impossible. It paid for itself on the second invoice it read, and the demurrage line alone was worth four figures.",
     name: "[Ana Reyes]",
-    role: "[Head of Ops, Northwind Ops]",
+    role: "[Head of Ops, Northwind Freight]",
   },
   {
-    stat: "9 hrs",
-    statLabel: "back, every week",
+    stat: "[2 days]",
+    statLabel: "to chase a POD, down from [11]",
     quote:
-      "I bought the triage one on a Thursday and it was running Friday morning. It writes replies that sound like me, which I did not expect.",
+      "The cash was never missing, it was sitting behind PDFs nobody had time to ask for. Now the chases go out on their own and stop the moment the document lands.",
     name: "[Tom Whitcombe]",
-    role: "[Founder, Kettle & Co]",
+    role: "[Finance Lead, Meridian Logistics]",
   },
   {
-    stat: "3×",
-    statLabel: "faster proposals out the door",
+    stat: "[0 hrs]",
+    statLabel: "spent building the carrier review",
     quote:
-      "The honest bit: I tried it on the site first with a real call transcript, saw it get the scope right, and bought it ten minutes later. No demo call needed.",
+      "The honest bit: I pasted a real invoice into the box on the website, watched it find a surcharge overcharge I'd have paid, and bought it ten minutes later. No demo call needed.",
     name: "[Priya Nandakumar]",
-    role: "[Partner, Baseline Legal]",
+    role: "[Director, Baseline 3PL]",
   },
 ];
 

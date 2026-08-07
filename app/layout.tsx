@@ -22,11 +22,11 @@ const mono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: `${SITE.name} — ${SITE.tagline}`,
   description:
-    "Ready-made AI workflows for lead qualification, inbox triage, proposals and ops monitoring. Try one in your browser with no signup, buy it with Revolut, GCash or PayNow.",
+    "Ready-made automations for freight: invoice audit, carrier scorecards, POD chasing and quoting. Paste a real invoice and watch one find the overcharge — no signup. Buy with Revolut, GCash or PayNow.",
   openGraph: {
     title: `${SITE.name} — ${SITE.tagline}`,
     description:
-      "Try an AI workflow in your browser. No card, no call. Buy the one that earns it.",
+      "Paste a freight invoice, watch it find the overcharge. No card, no call. Buy the one that earns it.",
     type: "website",
   },
 };

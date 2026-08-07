@@ -1,7 +1,7 @@
 export const SITE = {
   name: "[Autoworks]",
   /** The one-line answer to "what is this?" — reused in metadata and the nav. */
-  tagline: "Buy an AI workflow that runs your busywork. Try it first, free.",
+  tagline: "Freight automations that pay for themselves. Try one first, free.",
   builder: "[Your Name]",
   email: "[hello@yourdomain.com]",
   bookingUrl: "[https://cal.com/your-handle/30min]",

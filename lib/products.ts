@@ -1,17 +1,24 @@
 /**
- * PLACEHOLDER CATALOG.
- * Every string in [brackets] and every price below is a placeholder — see README
- * ("Replace before launch"). Prices are in MINOR UNITS (cents / centavos) because
- * that is what all three gateways expect.
+ * PLACEHOLDER CATALOG — logistics.
+ *
+ * Every string in [brackets] and every price is a placeholder — see README
+ * ("Replace before launch"). Prices are in MINOR UNITS (cents / centavos)
+ * because that is what all three gateways expect.
  *
  * Each product carries a price per rail currency rather than one price + FX at
- * runtime: Revolut settles in EUR here, PayMongo only does PHP, HitPay only does
- * SGD. Set each one deliberately instead of letting a stale exchange rate decide.
+ * runtime: Revolut settles in EUR here, PayMongo only does PHP, HitPay only
+ * does SGD. Set each one deliberately instead of letting a stale exchange rate
+ * decide.
+ *
+ * Selection principle for this shelf: universal inputs (invoices, email,
+ * spreadsheets — nothing that needs a proprietary TMS licence), a provable
+ * money outcome rather than a time saving, and a demo that lands from a single
+ * paste.
  */
 
 export type CurrencyCode = "EUR" | "PHP" | "SGD";
 
-export type DemoKind = "qualifier" | "triage" | "proposal" | "watchtower";
+export type DemoKind = "audit" | "scorecard" | "pod" | "proposal";
 
 export interface ProductStep {
   /** Node type drives the accent colour — trigger / agent / action / output. */
@@ -56,107 +63,147 @@ export function formatPrice(minor: number, currency: CurrencyCode): string {
 
 export const PRODUCTS: Product[] = [
   {
-    slug: "lead-qualifier",
-    name: "[Inbound Lead Qualifier]",
-    outcome: "Qualifies every inbound lead in under 60 seconds.",
+    slug: "freight-invoice-auditor",
+    name: "[Freight Invoice Auditor]",
+    outcome: "Finds the money your carriers overcharged you.",
     blurb:
-      "A form fill lands, the agent enriches it, scores it against your rules, and either books the call or sends a polite no — before you've opened the tab.",
-    priceMinor: { EUR: 49000, PHP: 3200000, SGD: 72000 },
+      "Every freight invoice checked against your rate card before it's paid — base rate, surcharge caps, accessorials you never agreed to, and demurrage inside free time. Flags what's recoverable and drafts the dispute.",
+    priceMinor: { EUR: 89000, PHP: 5600000, SGD: 130000 },
     billing: "one-time · yours to keep",
-    demo: "qualifier",
-    runsOn: ["n8n", "webhook in", "your CRM"],
-    setupTime: "[~40 min]",
+    demo: "audit",
+    runsOn: ["Email", "Excel rate card", "n8n"],
+    setupTime: "[~45 min]",
     flagship: true,
     steps: [
       {
         kind: "trigger",
-        label: "Form submitted",
-        detail: "Webhook catches the payload the moment your form posts.",
-      },
-      {
-        kind: "action",
-        label: "Enrich company",
-        detail: "Domain → headcount, funding, stack, region.",
+        label: "Invoice arrives",
+        detail: "Email, PDF, or a drop in a watched folder.",
       },
       {
         kind: "agent",
-        label: "Score against ICP",
-        detail: "Your rules in plain English, not a points spreadsheet.",
+        label: "Read the invoice",
+        detail: "Lane, charges, units — line by line.",
+      },
+      {
+        kind: "action",
+        label: "Check the rate card",
+        detail: "Your contract, your caps, your free time.",
       },
       {
         kind: "output",
-        label: "Route + reply",
-        detail: "Books, nurtures, or declines. Always writes back.",
+        label: "Dispute pack",
+        detail: "Recoverable total, sheet, drafted email.",
       },
     ],
     includes: [
       "Importable workflow JSON",
-      "Scoring prompt you can edit in English",
-      "CRM + calendar wiring for one stack",
+      "Rate-card template (Excel or Sheets) you fill in once",
+      "Dispute email template in your own wording",
       "[30 days] of fixes if something breaks",
     ],
   },
   {
-    slug: "inbox-triage",
-    name: "[Inbox Triage Agent]",
-    outcome: "Clears the 80% of your inbox that never needed you.",
+    slug: "carrier-scorecard",
+    name: "[Carrier Scorecard]",
+    outcome: "Your monthly carrier review, built overnight.",
     blurb:
-      "Reads every new thread, files it, drafts the obvious replies, and leaves a three-line summary of what actually needs a human.",
-    priceMinor: { EUR: 34000, PHP: 2200000, SGD: 50000 },
+      "On-time percentage, damage rate, cost per drop and exception counts by carrier — assembled from the data you already have and delivered as a formatted workbook the week it's due, not the week after.",
+    priceMinor: { EUR: 59000, PHP: 3800000, SGD: 87000 },
     billing: "one-time · yours to keep",
-    demo: "triage",
-    runsOn: ["Gmail", "n8n", "Slack"],
-    setupTime: "[~25 min]",
+    demo: "scorecard",
+    runsOn: ["Sheets or Excel", "n8n", "Email"],
+    setupTime: "[~35 min]",
     steps: [
       {
         kind: "trigger",
-        label: "New thread",
-        detail: "Watches the inbox, batched every few minutes.",
+        label: "Month closes",
+        detail: "Runs on a schedule, not on a reminder.",
       },
       {
         kind: "agent",
-        label: "Classify + summarise",
-        detail: "Intent, urgency, who it's really for.",
+        label: "Normalise the data",
+        detail: "Every carrier names their columns differently.",
       },
       {
         kind: "action",
-        label: "Draft reply",
-        detail: "Sits in drafts. Never sends without you.",
+        label: "Compute the metrics",
+        detail: "On-time, damage, cost per drop, exceptions.",
       },
       {
         kind: "output",
-        label: "Morning digest",
-        detail: "One message: what moved, what's waiting.",
+        label: "Workbook + summary",
+        detail: "Excel with charts, and the three lines that matter.",
       },
     ],
     includes: [
       "Importable workflow JSON",
-      "Label taxonomy you can rename",
-      "Tone sample trained on [10] of your own sent emails",
+      "Excel/Sheets template with the charts already wired",
+      "Metric definitions you can argue with a carrier about",
+      "[30 days] of fixes if something breaks",
+    ],
+  },
+  {
+    slug: "pod-chaser",
+    name: "[POD Chaser]",
+    outcome: "Chases every missing delivery note so you can invoice.",
+    blurb:
+      "Finds the deliveries with no proof attached, chases the driver or carrier on a schedule, and stops the moment the document lands. The cash you can't invoice for is usually sitting behind a missing PDF.",
+    priceMinor: { EUR: 44000, PHP: 2800000, SGD: 65000 },
+    billing: "one-time · yours to keep",
+    demo: "pod",
+    runsOn: ["Email", "Sheets", "n8n"],
+    setupTime: "[~25 min]",
+    steps: [
+      {
+        kind: "trigger",
+        label: "Delivery due",
+        detail: "Watches the manifest for anything past ETA.",
+      },
+      {
+        kind: "agent",
+        label: "Match the paperwork",
+        detail: "Ties inbound PDFs to the right consignment.",
+      },
+      {
+        kind: "action",
+        label: "Chase what's missing",
+        detail: "Driver, then carrier, then the account manager.",
+      },
+      {
+        kind: "output",
+        label: "Ready-to-invoice list",
+        detail: "What's cleared, what's still stuck, and with whom.",
+      },
+    ],
+    includes: [
+      "Importable workflow JSON",
+      "Escalation ladder you can re-time",
+      "Consignment matching rules",
       "[30 days] of fixes if something breaks",
     ],
   },
   {
     slug: "proposal-builder",
     name: "[Proposal Builder]",
-    outcome: "Turns a call recording into a sendable proposal by lunch.",
+    outcome: "Turns a rate enquiry into a sendable quote by lunch.",
     blurb:
-      "Transcript in, scoped proposal out — with the pricing table, the assumptions you always forget, and a follow-up sequence queued behind it.",
+      "Call notes or an RFQ in, scoped quote out — with the pricing table, the assumptions you always forget, and a follow-up sequence queued behind it. Built for the tender you'd otherwise answer at 9pm.",
     priceMinor: { EUR: 39000, PHP: 2600000, SGD: 58000 },
     billing: "one-time · yours to keep",
     demo: "proposal",
-    runsOn: ["Fireflies", "Docs", "n8n"],
+    runsOn: ["Email", "Docs", "n8n"],
     setupTime: "[~35 min]",
     steps: [
       {
         kind: "trigger",
-        label: "Call ends",
-        detail: "Transcript arrives from your recorder.",
+        label: "Enquiry lands",
+        detail: "Call notes, an email, or an RFQ document.",
       },
       {
         kind: "agent",
         label: "Extract scope",
-        detail: "Problem, constraints, budget signals, deadline.",
+        detail: "Lanes, volumes, constraints, budget signals, deadline.",
       },
       {
         kind: "action",
@@ -171,48 +218,8 @@ export const PRODUCTS: Product[] = [
     ],
     includes: [
       "Importable workflow JSON",
-      "Proposal template wired to your pricing rules",
+      "Quote template wired to your rate logic",
       "Follow-up sequence ([3] touches)",
-      "[30 days] of fixes if something breaks",
-    ],
-  },
-  {
-    slug: "ops-watchtower",
-    name: "[Ops Watchtower]",
-    outcome: "Tells you what broke, in English, before a client does.",
-    blurb:
-      "Watches your workflows, jobs, and integrations. When something fails it explains the failure, names the likely cause, and retries what's safe to retry.",
-    priceMinor: { EUR: 29000, PHP: 1900000, SGD: 42000 },
-    billing: "one-time · yours to keep",
-    demo: "watchtower",
-    runsOn: ["n8n", "Make", "Slack"],
-    setupTime: "[~20 min]",
-    steps: [
-      {
-        kind: "trigger",
-        label: "Run fails",
-        detail: "Any workflow, any platform, one listener.",
-      },
-      {
-        kind: "agent",
-        label: "Explain it",
-        detail: "Reads the error and the last good run.",
-      },
-      {
-        kind: "action",
-        label: "Retry what's safe",
-        detail: "Idempotent steps only. Never double-charges anyone.",
-      },
-      {
-        kind: "output",
-        label: "Alert with a verdict",
-        detail: "“Stripe timed out, retried, fine now.”",
-      },
-    ],
-    includes: [
-      "Importable workflow JSON",
-      "Failure taxonomy + retry policy",
-      "Slack / email alerting",
       "[30 days] of fixes if something breaks",
     ],
   },

@@ -1,5 +1,6 @@
 "use client";
 
+import { AuditDemo } from "@/components/audit/audit-demo";
 import { DemoRunner } from "@/components/demo-runner";
 import { ProposalDemo } from "@/components/proposal/proposal-demo";
 import type { Product } from "@/lib/products";
@@ -20,6 +21,10 @@ export function DemoSurface({
   variant?: "inline" | "modal";
   onBuy?: () => void;
 }) {
+  if (product.demo === "audit") {
+    return <AuditDemo product={product} variant={variant} onBuy={onBuy} />;
+  }
+
   if (product.demo === "proposal") {
     return <ProposalDemo product={product} variant={variant} onBuy={onBuy} />;
   }

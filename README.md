@@ -163,11 +163,11 @@ fallback rather than dead-ending the sale.
 
 Two different things, and the difference is deliberate.
 
-**Three of the four products** run `lib/demo/simulate.ts` — entirely in the
-browser, reading what the visitor typed and producing a specific verdict, four
-streamed steps, and a drafted reply. No API key, no request, no signup. It is a
-*simulation of the product*, not the product, and the page says so under the
-widget.
+**Two of the four products** ([Carrier Scorecard], [POD Chaser]) run
+`lib/demo/simulate.ts` — entirely in the browser, reading what the visitor typed
+and producing a specific verdict, four streamed steps, and a drafted message. No
+API key, no request, no signup. Those two are *simulations of the product*, not
+the product.
 
 **[Proposal Builder] is real** (`lib/demo/proposal/`). Its Run button executes
 the actual four-node pipeline and renders the actual output — extracted scope,
@@ -179,6 +179,34 @@ a priced proposal, and three follow-up emails:
 | 02b · Fit verdict | `classifyFit` | always deterministic |
 | 03 · Fill the template | `fillTemplate` | always deterministic |
 | 04 · Draft + reminders | `generateFollowUps` | model or heuristic |
+
+**[Freight Invoice Auditor] is also real** (`lib/demo/audit/`) and is the
+flagship. Paste an invoice; it parses the charge lines, checks them against a
+rate card, and produces a recovery figure, a dispute log and a drafted email:
+
+| Node | Function | How it runs |
+| --- | --- | --- |
+| 02 · Read the invoice | `parseInvoice` | regex over the pasted text |
+| 03 · Check the rate card | `findVariances` | **always deterministic** |
+| 04 · Dispute pack | `runAudit` | deterministic |
+
+It catches six things: base rate above the agreed lane rate, fuel surcharge over
+the contractual cap, accessorials not in the contract, demurrage billed inside
+free time, duplicated lines, and totals that don't match their own line items.
+The seeded example recovers £667.00, and that figure is asserted in the tests
+against a hand reconciliation — if the arithmetic ever drifts, the suite fails.
+
+Two deliberate choices worth keeping if you extend it. The fuel cap is taken
+against the **agreed** base, not the billed one — otherwise an inflated base
+quietly inflates the permitted surcharge and the overcharge hides. And findings
+are split `high` (contractual, send it) versus `review` (worth querying, a human
+looks first), because an unagreed accessorial might be legitimate and you don't
+want an automation accusing a carrier on its own.
+
+**TODO (v2):** `parseInvoice` is the one node that genuinely wants a model —
+real invoices are PDFs with per-carrier vocabulary. Swapping it for a
+structured-output call changes nothing downstream, because the arithmetic never
+depended on how the reading happened.
 
 **Pricing and the fit verdict never go to a model**, by design — same rule as
 the n8n build in §"How the workflow works". A rate card is a lookup and a
@@ -291,8 +319,9 @@ components/                    sections + the Buy/Try modals
 lib/
   payments/                    provider interface + three implementations
   orders/store.ts              order persistence (swap me)
-  demo/simulate.ts             the client-side try-it engine (3 products)
-  demo/proposal/               the real four-node pipeline + its tests
+  demo/simulate.ts             the client-side try-it engine (2 products)
+  demo/audit/                  [Freight Invoice Auditor] — real pipeline + tests
+  demo/proposal/               [Proposal Builder] — real pipeline + tests
   fulfillment.ts               one path for order.paid
   products.ts                  the placeholder catalog
 ```

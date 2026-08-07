@@ -11,6 +11,14 @@ import {
 import { NODE_COLOR } from "@/lib/node-colors";
 import type { DemoKind, Product } from "@/lib/products";
 
+/** What each product asks you to paste. Keyed so a new product must declare one. */
+const FIELD_LABEL: Record<DemoKind, string> = {
+  audit: "Paste a freight invoice",
+  scorecard: "Paste a slice of last month's deliveries",
+  pod: "Paste a manifest with the POD column",
+  proposal: "Paste a scrap of call notes",
+};
+
 function usePrefersReducedMotion(): boolean {
   const [reduced, setReduced] = useState(false);
   useEffect(() => {
@@ -210,13 +218,7 @@ export function DemoRunner({
       >
         <div className="flex flex-wrap items-center justify-between gap-2">
           <label htmlFor={inputId} className="eyebrow">
-            {kind === "qualifier"
-              ? "Paste a real inbound lead"
-              : kind === "triage"
-                ? "Paste an email you'd rather not answer"
-                : kind === "proposal"
-                  ? "Paste a scrap of call notes"
-                  : "Paste an error your stack threw"}
+            {FIELD_LABEL[kind]}
           </label>
           {statusSlot}
         </div>
