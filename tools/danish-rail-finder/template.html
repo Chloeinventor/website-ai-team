@@ -113,14 +113,15 @@
     .actions { order: 2; }
     .map-card { order: 3; }
     .setup { order: 4; }
-    .legend { order: 5; }
+    .discovered { order: 5; }
+    .legend { order: 6; }
   }
 
   .card {
     background: var(--panel); border: 1px solid var(--line);
     border-radius: var(--radius); box-shadow: var(--shadow);
   }
-  .setup h2, .legend h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0 0 10px; }
+  .setup h2, .legend h2, .discovered h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0 0 10px; }
 
   /* ---------- Prompt ---------- */
   .prompt { padding: 18px 20px; position: relative; overflow: hidden; }
@@ -271,6 +272,36 @@
   @keyframes fall { to { transform: translate3d(var(--drift), 105vh, 0) rotate(var(--spin)); } }
 
   footer a { color: inherit; }
+
+  /* ---------- Discovered list & fact card ---------- */
+  .discovered { padding: 16px 18px; }
+  .discovered ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+  .discovered li button {
+    padding: 5px 10px; font-size: 13px; border-radius: 99px; border: none;
+    background: var(--ok-soft); color: var(--ok);
+  }
+  .discovered li.skipped button { background: var(--skip-soft); color: var(--skip); }
+  .discovered .empty { margin: 0; font-size: 13px; color: var(--muted); }
+  .fact {
+    position: absolute; left: 12px; bottom: 12px; width: min(440px, calc(100% - 24px));
+    max-height: calc(100% - 90px); overflow-y: auto;
+    padding: 16px 18px 18px; z-index: 2; animation: rise .35s ease-out;
+  }
+  .fact[hidden] { display: none; }
+  @media (max-width: 860px) { .fact { max-height: 60%; padding: 14px 16px 16px; } .fact h3 { font-size: 21px; } }
+  .fact-close {
+    position: absolute; top: 8px; right: 8px; width: 32px; height: 32px; padding: 0;
+    border: none; background: transparent; font-size: 22px; line-height: 1; color: var(--muted);
+  }
+  .fact-kicker { margin: 0; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--ok); }
+  .fact.revealed .fact-kicker { color: var(--skip); }
+  .fact h3 { margin: 4px 36px 2px 0; font-size: 24px; letter-spacing: -.02em; }
+  .fact-region { margin: 0 0 10px; font-size: 13px; color: var(--muted); }
+  .fact-tags { list-style: none; margin: 0 0 10px; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+  .fact-tags li { font-size: 12px; font-weight: 600; padding: 4px 9px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); }
+  .fact-text { margin: 0; font-size: 14.5px; line-height: 1.55; }
+  .inset-frame { fill: var(--sea); stroke: var(--land-stroke); stroke-dasharray: 6 4; stroke-width: 1.2px; vector-effect: non-scaling-stroke; }
+  .inset-lbl { fill: var(--muted); font-weight: 700; letter-spacing: .2em; text-transform: uppercase; pointer-events: none; }
   footer { text-align: center; font-size: 12px; color: var(--muted); padding: 0 16px 18px; line-height: 1.5; }
 
   @media (prefers-reduced-motion: reduce) {
@@ -301,21 +332,21 @@
 <main>
   <section class="side">
     <div class="card prompt" id="prompt" aria-live="polite">
-      <p class="prompt-kicker" id="prompt-kicker">Find this station</p>
+      <p class="prompt-kicker" id="prompt-kicker">__KICKER__</p>
       <p class="prompt-name" id="prompt-name">—</p>
       <p class="prompt-hint" id="prompt-hint">Click its dot on the map. Scroll or pinch to zoom, drag to pan.</p>
       <div class="progress" aria-hidden="true"><span class="p-ok" id="bar-ok"></span><span class="p-skip" id="bar-skip"></span></div>
     </div>
     <div class="actions">
-      <button type="button" id="hint-btn" title="First hint: which lines stop there, and zoom to the area. Second hint: show the dot. Each hint adds 10 seconds.">Hint (+10s)</button>
-      <button type="button" id="skip-btn" title="Reveal this station and move on">Show me</button>
+      <button type="button" id="hint-btn" title="First hint: narrows down where it is and zooms to the area. Second hint: shows the dot. Each hint adds 10 seconds.">Hint (+10s)</button>
+      <button type="button" id="skip-btn" title="Reveal the answer and move on">Show me</button>
     </div>
 
     <div class="card setup">
       <h2>Game</h2>
       <div class="regions" id="regions" role="group" aria-label="Region"></div>
       <div class="setup-row">
-        <label for="count">Stations</label>
+        <label for="count" id="count-label">How many</label>
         <select id="count">
           <option value="10">10 per round</option>
           <option value="20" selected>20 per round</option>
@@ -326,7 +357,13 @@
       </div>
     </div>
 
-    <div class="card legend">
+    <div class="card discovered" id="discovered" hidden>
+      <h2>Discovered</h2>
+      <p class="empty" id="disc-empty">Find a town to read what it's famous for. Tap any discovered town to read it again.</p>
+      <ul id="disc-list"></ul>
+    </div>
+
+    <div class="card legend" id="legend">
       <h2>Map key</h2>
       <ul>
         <li><i style="background:var(--l-main)"></i>Main line</li>
@@ -341,8 +378,8 @@
     </div>
   </section>
 
-  <section class="card map-card" id="map-card" tabindex="0" aria-label="Rail map of Denmark. Use plus and minus to zoom and arrow keys to pan.">
-    <svg id="map" role="img" aria-label="Map of the Danish rail network"></svg>
+  <section class="card map-card" id="map-card" tabindex="0" aria-label="Map of Denmark. Use plus and minus to zoom and arrow keys to pan.">
+    <svg id="map" role="img" aria-label="Map of Denmark"></svg>
     <div class="map-jump" id="map-jump"></div>
     <div class="map-tools">
       <button type="button" id="zoom-in" aria-label="Zoom in">+</button>
@@ -352,11 +389,19 @@
       </button>
     </div>
     <div class="map-help" id="map-help">Scroll / pinch to zoom · drag to pan</div>
+    <div class="card fact" id="fact" hidden aria-live="polite">
+      <button type="button" class="fact-close" id="fact-close" aria-label="Close">×</button>
+      <p class="fact-kicker" id="fact-kicker">Found it!</p>
+      <h3 id="fact-name"></h3>
+      <p class="fact-region" id="fact-region"></p>
+      <ul class="fact-tags" id="fact-tags"></ul>
+      <p class="fact-text" id="fact-text"></p>
+    </div>
   </section>
 </main>
 
 <footer>
-  Station positions: <a href="https://github.com/trainline-eu/stations" style="color:inherit">Trainline stations dataset</a> (ODbL), plus hand-placed Metro and local-line stops.
+  __CREDITS__
   Coastline © <a href="https://www.openstreetmap.org/copyright" style="color:inherit">OpenStreetMap</a> contributors (ODbL), via geo-maps.
   __FOOTER_NOTE__
 </footer>
@@ -401,8 +446,12 @@
 
   const stations = DATA.stations.map((s, i) => ({
     i, name: s[0], x: s[1], y: s[2], region: s[3], lat: s[4], lon: s[5],
-    lines: [], el: null, label: null, state: "", active: false
+    info: s[6] || null, lines: [], el: null, label: null, state: "", active: false
   }));
+  const WORDS = Object.assign({ one: "station", many: "stops", kicker: "Find this station" }, DATA.meta.words);
+  const hasLines = DATA.lines.length > 0;
+  document.getElementById("legend").hidden = !hasLines;
+  document.getElementById("discovered").hidden = !stations.some((s) => s.info);
   DATA.lines.forEach((l) => {
     const seen = new Set();
     l.s.forEach((i) => {
@@ -475,6 +524,11 @@
   el("path", { d: DATA.land.se, class: "foreign" }, gLand);
   el("path", { d: DATA.land.de, class: "foreign" }, gLand);
   el("path", { d: DATA.land.dk, class: "land" }, gLand);
+  if (DATA.inset) {
+    const f = DATA.inset, gInset = el("g", {}, svg);
+    el("rect", { x: f.x, y: f.y, width: f.w, height: f.h, rx: 6, class: "inset-frame" }, gInset);
+    el("path", { d: DATA.land.bh, class: "land" }, gInset);
+  }
 
   const project = (lon, lat) => [
     (lon - DATA.proj.lon0) * DATA.proj.cos * DATA.proj.k, (DATA.proj.lat1 - lat) * DATA.proj.k];
@@ -487,6 +541,11 @@
     n.textContent = t;
     decoLabels.push({ n, size });
   });
+  if (DATA.inset) {
+    const n = el("text", { x: DATA.inset.x + 5, y: DATA.inset.y + 11, class: "inset-lbl" }, gDeco);
+    n.textContent = DATA.inset.label;
+    decoLabels.push({ n, size: 10 });
+  }
 
   const gRails = el("g", { class: "rails" }, svg);
   LINE_ORDER.forEach((kind) => {
@@ -698,6 +757,7 @@
   let gesture = null;
   svg.addEventListener("pointerdown", (e) => {
     if (e.button !== 0 && e.pointerType === "mouse") return;
+    if (!fact.box.hidden) hideFact(); // back to the map: the card has been read
     svg.setPointerCapture(e.pointerId);
     pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
     cancelAnimationFrame(anim);
@@ -763,6 +823,7 @@
   svg.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse" && !pointers.size) setHover(null); });
   svg.addEventListener("wheel", (e) => {
     e.preventDefault();
+    if (!fact.box.hidden) hideFact();
     const m = toMap(e.clientX, e.clientY);
     const k = e.deltaMode === 1 ? 0.05 : e.deltaMode === 2 ? 1 : 0.0018;
     zoomAt(m.x, m.y, Math.exp(-e.deltaY * k * (e.ctrlKey ? 2.5 : 1)));
@@ -837,7 +898,7 @@
     b.type = "button";
     b.dataset.region = r.id;
     const n = stations.filter((s) => inRegion(s, r.id)).length;
-    b.innerHTML = `${r.name}<span>${n} stops</span>`;
+    b.innerHTML = `${r.name}<span>${n} ${WORDS.many}</span>`;
     b.addEventListener("click", () => { game.region = r.id; savePrefs(); newGame(); });
     ui.regions.appendChild(b);
   });
@@ -886,6 +947,53 @@
     return names.join(", ");
   }
 
+  const regionName = (id) => (REGIONS.find((r) => r.id === id) || { name: id }).name;
+  function clue(s) {
+    return s.info ? `It's in <b>${regionName(s.region)}</b>.` : `Served by: <b>${servedBy(s)}</b>.`;
+  }
+
+  /* ---------- Fact card & discovered list ---------- */
+  const fact = {
+    box: $("fact"), kicker: $("fact-kicker"), name: $("fact-name"), region: $("fact-region"),
+    tags: $("fact-tags"), text: $("fact-text"), close: $("fact-close"), help: $("map-help")
+  };
+  const discList = $("disc-list"), discEmpty = $("disc-empty");
+  function showFact(s, why) {
+    fact.kicker.textContent = why === "found" ? "Found it!" : why === "revealed" ? "Here it is" : "Discovered";
+    fact.box.classList.toggle("revealed", why === "revealed");
+    fact.name.textContent = s.name;
+    fact.region.textContent = regionName(s.region);
+    fact.tags.innerHTML = "";
+    s.info.tags.forEach((t) => { const li = document.createElement("li"); li.textContent = t; fact.tags.appendChild(li); });
+    fact.text.textContent = s.info.text;
+    fact.box.hidden = false;
+    fact.help.hidden = true;
+    fact.box.scrollTop = 0;
+    fact.box.style.animation = "none";
+    void fact.box.offsetWidth;
+    fact.box.style.animation = "";
+  }
+  function hideFact() {
+    fact.box.hidden = true;
+    fact.help.hidden = false;
+  }
+  function addDiscovered(s) {
+    discEmpty.hidden = true;
+    const li = document.createElement("li");
+    if (s.state === "skipped") li.className = "skipped";
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = s.name;
+    b.addEventListener("click", () => {
+      showFact(s, "again");
+      const r = DATA.meta.revealKm * unitsPerKm;
+      flyTo(boxFor(s.x - r, s.y - r, s.x + r, s.y + r, 0));
+    });
+    li.appendChild(b);
+    discList.appendChild(li);
+  }
+  fact.close.addEventListener("click", hideFact);
+
   function setState(s, state) {
     s.state = state;
     s.el.setAttribute("class", "stn" + (s.hub ? " hub" : "") + (s.active ? "" : " off") + (state ? " " + state : ""));
@@ -905,6 +1013,9 @@
       hintLevel: 0, penalty: 0, startedAt: 0, finishedAt: 0, done: false
     });
     labels.slice().forEach((L) => removeLabel(L.s));
+    hideFact();
+    discList.innerHTML = "";
+    discEmpty.hidden = false;
     game.pool = stations.filter((s) => inRegion(s, game.region));
     stations.forEach((s) => { s.active = game.pool.includes(s); setState(s, ""); });
     gRails.classList.toggle("dim", game.region !== "all");
@@ -931,7 +1042,7 @@
     ui.hintBtn.textContent = "Hint (+10s)";
     if (!game.current) return finish();
     ui.hintBtn.disabled = false;
-    ui.kicker.textContent = `Find station ${game.found + game.skipped + 1} of ${game.total}`;
+    ui.kicker.textContent = `Find ${WORDS.one} ${game.found + game.skipped + 1} of ${game.total}`;
     ui.name.textContent = game.current.name;
     ui.hint.textContent = "Click its dot on the map. Scroll or pinch to zoom, drag to pan.";
     ui.prompt.classList.remove("enter");
@@ -941,11 +1052,12 @@
 
   const wrongTimers = new Map();
   function guess(s) {
-    if (game.done || !game.current) return;
     if (s.state === "found" || s.state === "skipped") {
-      ui.hint.innerHTML = `That's <b>${s.name}</b>, already on your map.`;
+      if (s.info) showFact(s, "again");
+      else if (!game.done) ui.hint.innerHTML = `That's <b>${s.name}</b>, already on your map.`;
       return;
     }
+    if (game.done || !game.current) return;
     startClock();
     const target = game.current;
     if (s === target) {
@@ -954,6 +1066,7 @@
       game.found++;
       setHover(null);
       applyView();
+      if (s.info) { addDiscovered(s); showFact(s, "found"); }
       nextStation();
       return;
     }
@@ -983,7 +1096,7 @@
     renderTime();
     game.hintLevel++;
     if (game.hintLevel === 1) {
-      ui.hint.innerHTML = `Served by: <b>${servedBy(t)}</b>.`;
+      ui.hint.innerHTML = clue(t);
       // Zoom to a neighbourhood around the target without centring it exactly.
       const span = (game.region === "kbh" ? DATA.meta.hintKm.kbh : DATA.meta.hintKm.other) * unitsPerKm;
       const ox = (Math.random() - .5) * span * .5, oy = (Math.random() - .5) * span * .5;
@@ -995,7 +1108,7 @@
       pulse.classList.add("on");
       const near = DATA.meta.revealKm * 0.66 * unitsPerKm;
       if (view.w > near * 6) flyTo(boxFor(t.x - near, t.y - near, t.x + near, t.y + near, 0));
-      ui.hint.innerHTML = `Look for the pulsing dot. Served by: <b>${servedBy(t)}</b>.`;
+      ui.hint.innerHTML = `Look for the pulsing dot. ${clue(t)}`;
       ui.hintBtn.disabled = true;
     }
   }
@@ -1007,6 +1120,7 @@
     setState(t, "skipped");
     addLabel(t, "skipped");
     game.skipped++;
+    if (t.info) { addDiscovered(t); showFact(t, "revealed"); }
     const r = DATA.meta.revealKm * unitsPerKm;
     flyTo(boxFor(t.x - r, t.y - r, t.x + r, t.y + r, 0));
     ui.hintBtn.disabled = false;
@@ -1039,8 +1153,8 @@
     ui.rFound.textContent = `${game.found}/${game.total}`;
     ui.rAcc.textContent = `${acc}%`;
     ui.rHints.textContent = game.hints;
-    const regionName = REGIONS.find((r) => r.id === game.region).name;
-    ui.vSub.textContent = `${regionName}: ${game.total} stations` + (game.skipped ? `, ${game.skipped} shown to you.` : ".");
+    const roundRegion = regionName(game.region);
+    ui.vSub.textContent = `${roundRegion}: ${game.total} ${WORDS.many}` + (game.skipped ? `, ${game.skipped} shown to you.` : ".");
 
     const key = `${DATA.meta.key}:best:${game.region}:${game.count}`;
     let best = null;
@@ -1086,7 +1200,9 @@
   ui.review.addEventListener("click", () => ui.overlay.classList.remove("show"));
   ui.count.addEventListener("change", () => { game.count = ui.count.value; savePrefs(); newGame(); });
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && ui.overlay.classList.contains("show")) ui.overlay.classList.remove("show");
+    if (e.key !== "Escape") return;
+    if (ui.overlay.classList.contains("show")) ui.overlay.classList.remove("show");
+    else if (!fact.box.hidden) hideFact();
   });
 
   /* ======================================================================

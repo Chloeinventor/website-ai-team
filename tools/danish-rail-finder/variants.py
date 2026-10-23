@@ -45,7 +45,8 @@ VARIANTS = {
             "key": "danish-rail-finder",
             "footer": "Lines are drawn station to station, so curves are simplified. Bornholm has no railway, so it isn't shown."
                       "<br>Start smaller with <a href=\"danish-city-finder.html\">Danish City Finder</a>,"
-                      " or zoom in on <a href=\"danish-rail-finder-sjaelland.html\">Sjælland only</a>.",
+                      " zoom in on <a href=\"danish-rail-finder-sjaelland.html\">Sjælland only</a>,"
+                      " or learn about the towns in <a href=\"denmark-town-explorer.html\">Denmark Town Explorer</a>.",
             "hintKm": {"kbh": 12, "other": 28},
             "revealKm": 9,
         },
@@ -83,7 +84,7 @@ VARIANTS = {
             "key": "sjaelland-rail-finder",
             "footer": "Lines are drawn station to station, so curves are simplified. Grey dots across the water are outside this game."
                       "<br>Want the whole country? Play <a href=\"danish-rail-finder.html\">Danish Rail Finder</a>,"
-                      " or start with <a href=\"danish-city-finder.html\">Danish City Finder</a>.",
+                      " or learn about the towns in <a href=\"denmark-town-explorer.html\">Denmark Town Explorer</a>.",
             "hintKm": {"kbh": 8, "other": 16},
             "revealKm": 6,
         },
@@ -110,4 +111,48 @@ VARIANTS = {
             ["Køge Bugt", 12.45, 55.47, "sea-lbl", 11], ["Isefjord", 11.78, 55.88, "sea-lbl", 10],
         ],
     },
+}
+
+VARIANTS["towns"] = {
+    "kind": "towns",
+    "bbox": (7.95, 13.2, 54.52, 57.78),
+    "margin": {"dk": 60, "se": 460, "de": 460},
+    "eps": {"dk": 0.22, "se": 0.88, "de": 0.88},
+    # Bornholm is drawn in a box in the Baltic, south-east of Møn.
+    "inset": {"minLon": 14.5, "shift": (-2.05, -0.38), "label": "Bornholm"},
+    "meta": {
+        "title": "Denmark Town Explorer",
+        "tagline": "Find Denmark's cities and towns, and discover what each one is famous for",
+        "description": "A geography puzzle: find 72 Danish cities and towns on the map and learn what each one is famous for.",
+        "key": "denmark-town-explorer",
+        "footer": "Dots mark town centres. Bornholm is shown in the box at the bottom right; distances use its real position."
+                  "<br>More map games: <a href=\"danish-city-finder.html\">Danish City Finder</a>,"
+                  " <a href=\"danish-rail-finder.html\">Danish Rail Finder</a> and"
+                  " <a href=\"danish-rail-finder-sjaelland.html\">Sjælland Rail Finder</a>.",
+        "hintKm": {"kbh": 40, "other": 60},
+        "revealKm": 25,
+        "words": {"one": "town", "many": "towns", "kicker": "Find this town"},
+        "credits": "Town facts and positions compiled for this game.",
+    },
+    "regions": [
+        ["all", "All of Denmark"],
+        ["hov", "Capital Region & Bornholm"],
+        ["sjl", "Region Zealand"],
+        ["syd", "Southern Denmark"],
+        ["mid", "Central Jutland"],
+        ["nord", "North Jutland"],
+    ],
+    "jumps": [
+        ["Copenhagen & North Zealand", 55.5, 12.0, 56.15, 12.75],
+        ["Funen", 54.8, 9.65, 55.65, 10.95],
+        ["South Jutland", 54.85, 8.0, 55.8, 9.95],
+        ["Bornholm", 54.58, 12.6, 54.95, 13.15],
+    ],
+    "deco": [
+        ["Jylland", 9.25, 56.25, "region-lbl", 20], ["Fyn", 10.35, 55.24, "region-lbl", 15],
+        ["Sjælland", 11.55, 55.47, "region-lbl", 17], ["Sverige", 12.95, 56.2, "region-lbl", 13],
+        ["Deutschland", 9.6, 54.6, "region-lbl", 12], ["Kattegat", 11.4, 56.75, "sea-lbl", 14],
+        ["Skagerrak", 9.2, 57.65, "sea-lbl", 14], ["Nordsøen", 8.3, 57.3, "sea-lbl", 14],
+        ["Østersøen", 12.3, 54.56, "sea-lbl", 13],
+    ],
 }

@@ -24,6 +24,16 @@ KM_PER_UNIT = 6371 * math.pi / 180 / K  # north-south distance of one map unit
 def proj(lon, lat):
     return ((lon - LON0) * COS * K, (LAT1 - lat) * K)
 
+# Optional inset (Bornholm): everything east of minLon is drawn shifted into
+# a framed box. Real lat/lon are kept for distances.
+INSET = V.get("inset")
+def in_inset(lon):
+    return bool(INSET) and lon > INSET["minLon"]
+def place(lon, lat):
+    if in_inset(lon):
+        return proj(lon + INSET["shift"][0], lat + INSET["shift"][1])
+    return proj(lon, lat)
+
 # ---------------------------------------------------------------- stations
 def norm(name):
     n = re.sub(r"\s*\(.*?\)", "", name)
@@ -45,6 +55,9 @@ with open(os.path.join(DATA_DIR, "stations.csv"), newline="") as f:
             score[n] = s
 coords.update(MANUAL)
 
+if V.get("kind") == "towns":
+    from towns import TOWNS
+    LINES = []
 missing = [(label, n) for _, label, seq in LINES for n in seq if n not in coords]
 if missing:
     for m in missing:
@@ -81,8 +94,12 @@ for kind, label, seq in LINES:
 stations_out = []
 for name in used:
     lat, lon = coords[name]
-    x, y = proj(lon, lat)
+    x, y = place(lon, lat)
     stations_out.append([name, round(x, 2), round(y, 2), region[name] or "ctx", round(lat, 5), round(lon, 5)])
+if V.get("kind") == "towns":
+    for name, lat, lon, reg, tags, text in TOWNS:
+        x, y = place(lon, lat)
+        stations_out.append([name, round(x, 2), round(y, 2), reg, lat, lon, {"tags": tags, "text": text}])
 
 # ---------------------------------------------------------------- land
 def clip_ring(ring, xmin, ymin, xmax, ymax):
@@ -156,15 +173,21 @@ geo = json.load(open(os.path.join(DATA_DIR, "nbrs.json")))
 MARGIN = V["margin"]
 HOLE_MIN_AREA = float(os.environ.get("HOLE_MIN_AREA", "20"))
 MIN_AREA = float(os.environ.get("MIN_AREA", "0.6"))
-land_out = {}
+land_out = {"bh": ""}
+inset_pts = []
 npts = 0
 for code, key in (("DNK", "dk"), ("SWE", "se"), ("DEU", "de")):
     parts = []
     for poly in geo[code]["coordinates"]:
         for ri, ring in enumerate(poly):
-            pts = [proj(lon, lat) for lon, lat in ring]
-            m = MARGIN[key]
-            pts = clip_ring(pts, -m, -m, W + m, H + m)
+            to_inset = key == "dk" and all(in_inset(lon) for lon, _ in ring)
+            if to_inset:
+                pts = [place(lon, lat) for lon, lat in ring]
+                if ri == 0:
+                    inset_pts.extend(pts)
+            else:
+                m = MARGIN[key]
+                pts = clip_ring([proj(lon, lat) for lon, lat in ring], -m, -m, W + m, H + m)
             if len(pts) < 3:
                 continue
             if area(pts) < (MIN_AREA * (1 if key == "dk" else 15) if ri == 0 else HOLE_MIN_AREA):
@@ -173,20 +196,34 @@ for code, key in (("DNK", "dk"), ("SWE", "se"), ("DEU", "de")):
             if len(pts) < 3:
                 continue
             npts += len(pts)
-            parts.append(ring_path_abs(pts))
+            if to_inset:
+                land_out["bh"] += ring_path_abs(pts)
+            else:
+                parts.append(ring_path_abs(pts))
     land_out[key] = "".join(parts)
+
+inset_out = None
+if INSET and inset_pts:
+    xs, ys = [p[0] for p in inset_pts], [p[1] for p in inset_pts]
+    pad, top = INSET.get("pad", 10), INSET.get("labelSpace", 16)
+    inset_out = {"x": round(min(xs) - pad, 1), "y": round(min(ys) - pad - top, 1),
+                 "w": round(max(xs) - min(xs) + pad * 2, 1), "h": round(max(ys) - min(ys) + pad * 2 + top, 1),
+                 "label": INSET["label"]}
 
 data = {
     "W": W, "H": H,
     "proj": {"lon0": LON0, "lat1": LAT1, "k": K, "cos": COS, "kmPerUnit": KM_PER_UNIT},
-    "meta": {k: v for k, v in V["meta"].items() if k not in ("title", "tagline", "description", "footer")},
+    "meta": {k: v for k, v in V["meta"].items() if k not in ("title", "tagline", "description", "footer", "credits")},
     "regions": V["regions"],
     "jumps": V["jumps"],
     "deco": V["deco"],
     "land": land_out,
     "stations": stations_out,
     "lines": lines_out,
+    "inset": inset_out,
 }
+RAIL_CREDITS = ('Station positions: <a href="https://github.com/trainline-eu/stations">Trainline stations dataset</a>'
+                ' (ODbL), plus hand-placed Metro and local-line stops.')
 blob = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
 tpl = open(TEMPLATE, encoding="utf-8").read()
 meta = V["meta"]
@@ -196,6 +233,8 @@ for token, value in (
     ("__TAGLINE__", html.escape(meta["tagline"])),
     ("__DESCRIPTION__", html.escape(meta["description"])),
     ("__FOOTER_NOTE__", meta["footer"]),
+    ("__KICKER__", html.escape(meta.get("words", {}).get("kicker", "Find this station"))),
+    ("__CREDITS__", meta.get("credits", RAIL_CREDITS)),
 ):
     assert token in tpl, token
     tpl = tpl.replace(token, value)
