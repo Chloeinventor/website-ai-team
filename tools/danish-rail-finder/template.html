@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Danish Rail Finder</title>
-<meta name="description" content="A geography puzzle: find every train, S-tog, metro and light-rail stop in Denmark on the map.">
+<title>__TITLE__</title>
+<meta name="description" content="__DESCRIPTION__">
 <style>
   :root {
     --bg: #f3f1ec;
@@ -270,6 +270,7 @@
   .confetti i { position: absolute; top: -12px; width: 8px; height: 14px; border-radius: 2px; animation: fall linear forwards; }
   @keyframes fall { to { transform: translate3d(var(--drift), 105vh, 0) rotate(var(--spin)); } }
 
+  footer a { color: inherit; }
   footer { text-align: center; font-size: 12px; color: var(--muted); padding: 0 16px 18px; line-height: 1.5; }
 
   @media (prefers-reduced-motion: reduce) {
@@ -286,8 +287,8 @@
       </svg>
     </div>
     <div>
-      <h1>Danish Rail Finder</h1>
-      <p class="tagline">Find every train, S-tog, metro and light-rail stop in Denmark</p>
+      <h1>__TITLE__</h1>
+      <p class="tagline">__TAGLINE__</p>
     </div>
   </div>
   <div class="stats">
@@ -357,8 +358,7 @@
 <footer>
   Station positions: <a href="https://github.com/trainline-eu/stations" style="color:inherit">Trainline stations dataset</a> (ODbL), plus hand-placed Metro and local-line stops.
   Coastline © <a href="https://www.openstreetmap.org/copyright" style="color:inherit">OpenStreetMap</a> contributors (ODbL), via geo-maps.
-  Lines are drawn station to station, so curves are simplified. Bornholm has no railway, so it isn't shown.
-  <br>Start smaller with <a href="danish-city-finder.html" style="color:inherit">Danish City Finder</a>.
+  __FOOTER_NOTE__
 </footer>
 
 <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="victory-title">
@@ -395,13 +395,7 @@
   /* ======================================================================
      Data
      ====================================================================== */
-  const REGIONS = [
-    { id: "all", name: "All of Denmark" },
-    { id: "kbh", name: "Copenhagen S-tog & Metro" },
-    { id: "sjl", name: "Zealand, Lolland & Falster" },
-    { id: "fyn", name: "Funen" },
-    { id: "jyl", name: "Jutland" }
-  ];
+  const REGIONS = DATA.regions.map(([id, name]) => ({ id, name }));
   const LINE_ORDER = ["local", "regional", "main", "stog", "m4", "m3", "m2", "m1"];
   const LINE_KIND = { main: "main line", regional: "regional line", local: "local line", stog: "S-tog", m1: "Metro", m2: "Metro", m3: "Metro", m4: "Metro" };
 
@@ -444,15 +438,24 @@
     const segs = closed ? n : n - 1;
     for (let i = 0; i < segs; i++) {
       const p0 = at(i - 1), p1 = at(i), p2 = at(i + 1), p3 = at(i + 2);
-      const c1x = p1[0] + (p2[0] - p0[0]) * t, c1y = p1[1] + (p2[1] - p0[1]) * t;
-      const c2x = p2[0] - (p3[0] - p1[0]) * t, c2y = p2[1] - (p3[1] - p1[1]) * t;
+      // Cap the handles at a fraction of this segment so sharp turns
+      // next to a long segment don't overshoot into loops.
+      const seg = Math.hypot(p2[0] - p1[0], p2[1] - p1[1]);
+      const cap = (dx, dy) => {
+        const len = Math.hypot(dx, dy), max = seg * 0.4;
+        return len > max ? [dx * max / len, dy * max / len] : [dx, dy];
+      };
+      const h1 = cap((p2[0] - p0[0]) * t, (p2[1] - p0[1]) * t);
+      const h2 = cap((p3[0] - p1[0]) * t, (p3[1] - p1[1]) * t);
+      const c1x = p1[0] + h1[0], c1y = p1[1] + h1[1];
+      const c2x = p2[0] - h2[0], c2y = p2[1] - h2[1];
       d += `C${c1x.toFixed(2)} ${c1y.toFixed(2)} ${c2x.toFixed(2)} ${c2y.toFixed(2)} ${p2[0].toFixed(2)} ${p2[1].toFixed(2)}`;
     }
     return closed ? d + "Z" : d;
   }
 
-  // Neighbouring countries are only stored a little way past the map edge, so
-  // fade them out (one mask per axis) instead of showing a hard cut.
+  // Land is only stored a little way past the map edge, so fade it out
+  // (one mask per axis) instead of showing a hard cut.
   const defs = el("defs", {}, svg);
   const FADE_OUT = 450, FADE_IN = 150;
   [["x", DATA.W], ["y", DATA.H]].forEach(([axis, size]) => {
@@ -468,22 +471,18 @@
     const m = el("mask", Object.assign({ id: `mask-${axis}`, maskUnits: "userSpaceOnUse" }, area), defs);
     el("rect", Object.assign({ fill: `url(#fade-${axis})` }, area), m);
   });
-  const gLand = el("g", {}, svg);
-  const gForeign = el("g", { mask: "url(#mask-y)" }, el("g", { mask: "url(#mask-x)" }, gLand));
-  el("path", { d: DATA.land.se, class: "foreign" }, gForeign);
-  el("path", { d: DATA.land.de, class: "foreign" }, gForeign);
+  const gLand = el("g", { mask: "url(#mask-y)" }, el("g", { mask: "url(#mask-x)" }, svg));
+  el("path", { d: DATA.land.se, class: "foreign" }, gLand);
+  el("path", { d: DATA.land.de, class: "foreign" }, gLand);
   el("path", { d: DATA.land.dk, class: "land" }, gLand);
 
+  const project = (lon, lat) => [
+    (lon - DATA.proj.lon0) * DATA.proj.cos * DATA.proj.k, (DATA.proj.lat1 - lat) * DATA.proj.k];
+  const unitsPerKm = 1 / DATA.proj.kmPerUnit;
   const gDeco = el("g", {}, svg);
   const decoLabels = [];
-  [["Jylland", 9.25, 56.25, "region-lbl", 20], ["Fyn", 10.35, 55.24, "region-lbl", 15],
-   ["Sjælland", 11.55, 55.47, "region-lbl", 17], ["Sverige", 12.95, 56.2, "region-lbl", 13],
-   ["Deutschland", 9.6, 54.6, "region-lbl", 12], ["Kattegat", 11.4, 56.75, "sea-lbl", 14],
-   ["Skagerrak", 9.2, 57.65, "sea-lbl", 14], ["Nordsøen", 8.3, 57.3, "sea-lbl", 14],
-   ["Østersøen", 12.6, 54.65, "sea-lbl", 13]
-  ].forEach(([t, lon, lat, cls, size]) => {
-    const x = (lon - 7.95) * Math.cos(56 * Math.PI / 180) * (DATA.W / ((13.0 - 7.95) * Math.cos(56 * Math.PI / 180)));
-    const y = (57.78 - lat) * (DATA.W / ((13.0 - 7.95) * Math.cos(56 * Math.PI / 180)));
+  DATA.deco.forEach(([t, lon, lat, cls, size]) => {
+    const [x, y] = project(lon, lat);
     const n = el("text", { x, y, class: cls, "text-anchor": "middle" }, gDeco);
     n.textContent = t;
     decoLabels.push({ n, size });
@@ -788,22 +787,13 @@
   });
 
   // Quick jumps to dense areas.
-  const JUMPS = [
-    ["Copenhagen", 55.60, 12.42, 55.76, 12.66],
-    ["Inner city", 55.645, 12.50, 55.715, 12.61],
-    ["North Zealand", 55.85, 12.0, 56.14, 12.65],
-    ["Aarhus", 56.05, 9.85, 56.45, 10.95],
-    ["Odense", 55.0, 9.7, 55.62, 10.9]
-  ];
   const jumpBox = document.getElementById("map-jump");
-  const scaleK = DATA.W / ((13.0 - 7.95) * Math.cos(56 * Math.PI / 180));
-  const P = (lon, lat) => [(lon - 7.95) * Math.cos(56 * Math.PI / 180) * scaleK, (57.78 - lat) * scaleK];
-  JUMPS.forEach(([name, la0, lo0, la1, lo1]) => {
+  DATA.jumps.forEach(([name, la0, lo0, la1, lo1]) => {
     const b = document.createElement("button");
     b.type = "button";
     b.textContent = name;
     b.addEventListener("click", () => {
-      const [x0, y1] = P(lo0, la0), [x1, y0] = P(lo1, la1);
+      const [x0, y1] = project(lo0, la0), [x1, y0] = project(lo1, la1);
       flyTo(boxFor(x0, y0, x1, y1, 2));
     });
     jumpBox.appendChild(b);
@@ -831,21 +821,22 @@
 
   function restorePrefs() {
     try {
-      const p = JSON.parse(localStorage.getItem("danish-rail-finder:prefs") || "{}");
+      const p = JSON.parse(localStorage.getItem(`${DATA.meta.key}:prefs`) || "{}");
       if (REGIONS.some((r) => r.id === p.region)) game.region = p.region;
       if (["10", "20", "50", "all"].includes(p.count)) game.count = p.count;
     } catch (e) { /* storage unavailable */ }
     ui.count.value = game.count;
   }
   function savePrefs() {
-    try { localStorage.setItem("danish-rail-finder:prefs", JSON.stringify({ region: game.region, count: game.count })); } catch (e) { /* ignore */ }
+    try { localStorage.setItem(`${DATA.meta.key}:prefs`, JSON.stringify({ region: game.region, count: game.count })); } catch (e) { /* ignore */ }
   }
 
+  const inRegion = (s, id) => s.region !== "ctx" && (id === "all" || s.region === id);
   REGIONS.forEach((r) => {
     const b = document.createElement("button");
     b.type = "button";
     b.dataset.region = r.id;
-    const n = r.id === "all" ? stations.length : stations.filter((s) => s.region === r.id).length;
+    const n = stations.filter((s) => inRegion(s, r.id)).length;
     b.innerHTML = `${r.name}<span>${n} stops</span>`;
     b.addEventListener("click", () => { game.region = r.id; savePrefs(); newGame(); });
     ui.regions.appendChild(b);
@@ -914,7 +905,7 @@
       hintLevel: 0, penalty: 0, startedAt: 0, finishedAt: 0, done: false
     });
     labels.slice().forEach((L) => removeLabel(L.s));
-    game.pool = stations.filter((s) => game.region === "all" || s.region === game.region);
+    game.pool = stations.filter((s) => inRegion(s, game.region));
     stations.forEach((s) => { s.active = game.pool.includes(s); setState(s, ""); });
     gRails.classList.toggle("dim", game.region !== "all");
     const n = game.count === "all" ? game.pool.length : Math.min(game.pool.length, Number(game.count));
@@ -994,7 +985,7 @@
     if (game.hintLevel === 1) {
       ui.hint.innerHTML = `Served by: <b>${servedBy(t)}</b>.`;
       // Zoom to a neighbourhood around the target without centring it exactly.
-      const span = game.region === "kbh" ? 38 : 90;
+      const span = (game.region === "kbh" ? DATA.meta.hintKm.kbh : DATA.meta.hintKm.other) * unitsPerKm;
       const ox = (Math.random() - .5) * span * .5, oy = (Math.random() - .5) * span * .5;
       flyTo(boxFor(t.x + ox - span / 2, t.y + oy - span / 2, t.x + ox + span / 2, t.y + oy + span / 2, 0));
       ui.hintBtn.textContent = "Show dot (+10s)";
@@ -1002,7 +993,8 @@
       pulse.setAttribute("cx", t.x);
       pulse.setAttribute("cy", t.y);
       pulse.classList.add("on");
-      if (DATA.W / view.w < 6) flyTo(boxFor(t.x - 20, t.y - 20, t.x + 20, t.y + 20, 0));
+      const near = DATA.meta.revealKm * 0.66 * unitsPerKm;
+      if (view.w > near * 6) flyTo(boxFor(t.x - near, t.y - near, t.x + near, t.y + near, 0));
       ui.hint.innerHTML = `Look for the pulsing dot. Served by: <b>${servedBy(t)}</b>.`;
       ui.hintBtn.disabled = true;
     }
@@ -1015,7 +1007,8 @@
     setState(t, "skipped");
     addLabel(t, "skipped");
     game.skipped++;
-    flyTo(boxFor(t.x - 30, t.y - 30, t.x + 30, t.y + 30, 0));
+    const r = DATA.meta.revealKm * unitsPerKm;
+    flyTo(boxFor(t.x - r, t.y - r, t.x + r, t.y + r, 0));
     ui.hintBtn.disabled = false;
     nextStation();
     if (!game.done) {
@@ -1049,7 +1042,7 @@
     const regionName = REGIONS.find((r) => r.id === game.region).name;
     ui.vSub.textContent = `${regionName}: ${game.total} stations` + (game.skipped ? `, ${game.skipped} shown to you.` : ".");
 
-    const key = `danish-rail-finder:best:${game.region}:${game.count}`;
+    const key = `${DATA.meta.key}:best:${game.region}:${game.count}`;
     let best = null;
     try { best = Number(localStorage.getItem(key)) || null; } catch (e) { /* ignore */ }
     if (game.skipped) {

@@ -1,21 +1,25 @@
-"""Build data for the Danish Rail Finder game and inline it into the HTML template.
+"""Build data for a Rail Finder game and inline it into the HTML template.
 
-Usage: python3 -I build.py <data_dir> <template.html> <out.html>
+Usage: python3 -I build.py <data_dir> <template.html> <out.html> [variant]
+Variants are defined in variants.py (default: denmark).
 """
-import csv, json, math, re, sys, os
+import csv, html, json, math, re, sys, os
 
 sys.dont_write_bytecode = True
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from network import MANUAL, RENAME, LINES, STOG, M1, M2, M3, M4
+from variants import VARIANTS
 
 DATA_DIR, TEMPLATE, OUT = sys.argv[1:4]
+V = VARIANTS[sys.argv[4] if len(sys.argv) > 4 else "denmark"]
 
 # ---------------------------------------------------------------- projection
-LON0, LON1, LAT0, LAT1 = 7.95, 13.0, 54.52, 57.78
+LON0, LON1, LAT0, LAT1 = V["bbox"]
 COS = math.cos(math.radians(56))
 K = 1000 / ((LON1 - LON0) * COS)
 W = 1000
 H = round((LAT1 - LAT0) * K)
+KM_PER_UNIT = 6371 * math.pi / 180 / K  # north-south distance of one map unit
 
 def proj(lon, lat):
     return ((lon - LON0) * COS * K, (LAT1 - lat) * K)
@@ -41,46 +45,44 @@ with open(os.path.join(DATA_DIR, "stations.csv"), newline="") as f:
             score[n] = s
 coords.update(MANUAL)
 
-used = []
-index = {}
-missing = []
-lines_out = []
-for kind, label, seq in LINES:
-    ids = []
-    for name in seq:
-        if name not in coords:
-            missing.append((label, name))
-            continue
-        if name not in index:
-            index[name] = len(used)
-            used.append(name)
-        ids.append(index[name])
-    lines_out.append({"t": kind, "n": label, "s": ids})
+missing = [(label, n) for _, label, seq in LINES for n in seq if n not in coords]
 if missing:
     for m in missing:
         print("MISSING", m)
     sys.exit(1)
 
-# Which stations are served by S-tog / Metro (the "Copenhagen" region).
-city = set()
-for l in lines_out:
-    if l["t"] in (STOG, M1, M2, M3, M4):
-        city.update(l["s"])
+# Stations served by S-tog / Metro form the "Copenhagen" region.
+city = {n for kind, _, seq in LINES if kind in (STOG, M1, M2, M3, M4) for n in seq}
+region = {n: V["region"](coords[n][0], coords[n][1], n in city)
+          for _, _, seq in LINES for n in seq}
 
-def region(i, lat, lon):
-    if i in city:
-        return "kbh"
-    if lon > 10.95:
-        return "sjl"
-    if lat < 55.62 and lon > 9.72 and not (lon < 9.80 and lat > 55.53):
-        return "fyn"
-    return "jyl"
+# Keep every segment that touches a playable station; the far end of a
+# segment leaving the game area stays as a grey context dot.
+used, index, lines_out = [], {}, []
+def sid(name):
+    if name not in index:
+        index[name] = len(used)
+        used.append(name)
+    return index[name]
+for kind, label, seq in LINES:
+    run = []
+    for a, b in zip(seq, seq[1:]):
+        if region[a] is None and region[b] is None:
+            if len(run) > 1:
+                lines_out.append({"t": kind, "n": label, "s": run})
+            run = []
+            continue
+        if not run:
+            run = [sid(a)]
+        run.append(sid(b))
+    if len(run) > 1:
+        lines_out.append({"t": kind, "n": label, "s": run})
 
 stations_out = []
-for i, name in enumerate(used):
+for name in used:
     lat, lon = coords[name]
     x, y = proj(lon, lat)
-    stations_out.append([name, round(x, 2), round(y, 2), region(i, lat, lon), round(lat, 5), round(lon, 5)])
+    stations_out.append([name, round(x, 2), round(y, 2), region[name] or "ctx", round(lat, 5), round(lon, 5)])
 
 # ---------------------------------------------------------------- land
 def clip_ring(ring, xmin, ymin, xmax, ymax):
@@ -151,9 +153,8 @@ def ring_path_abs(pts):
     return "M" + "L".join("%.1f %.1f" % p for p in pts) + "Z"
 
 geo = json.load(open(os.path.join(DATA_DIR, "nbrs.json")))
-MARGIN = {"dk": 60, "se": 460, "de": 460}
+MARGIN = V["margin"]
 HOLE_MIN_AREA = float(os.environ.get("HOLE_MIN_AREA", "20"))
-EPS = float(os.environ.get("EPS", "0.22"))
 MIN_AREA = float(os.environ.get("MIN_AREA", "0.6"))
 land_out = {}
 npts = 0
@@ -168,7 +169,7 @@ for code, key in (("DNK", "dk"), ("SWE", "se"), ("DEU", "de")):
                 continue
             if area(pts) < (MIN_AREA * (1 if key == "dk" else 15) if ri == 0 else HOLE_MIN_AREA):
                 continue
-            pts = simplify_ring(pts, EPS if key == "dk" else EPS * 4)
+            pts = simplify_ring(pts, V["eps"][key])
             if len(pts) < 3:
                 continue
             npts += len(pts)
@@ -177,14 +178,28 @@ for code, key in (("DNK", "dk"), ("SWE", "se"), ("DEU", "de")):
 
 data = {
     "W": W, "H": H,
+    "proj": {"lon0": LON0, "lat1": LAT1, "k": K, "cos": COS, "kmPerUnit": KM_PER_UNIT},
+    "meta": {k: v for k, v in V["meta"].items() if k not in ("title", "tagline", "description", "footer")},
+    "regions": V["regions"],
+    "jumps": V["jumps"],
+    "deco": V["deco"],
     "land": land_out,
     "stations": stations_out,
     "lines": lines_out,
 }
 blob = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
 tpl = open(TEMPLATE, encoding="utf-8").read()
-assert "/*__DATA__*/null" in tpl
-open(OUT, "w", encoding="utf-8").write(tpl.replace("/*__DATA__*/null", blob))
+meta = V["meta"]
+for token, value in (
+    ("/*__DATA__*/null", blob),
+    ("__TITLE__", html.escape(meta["title"])),
+    ("__TAGLINE__", html.escape(meta["tagline"])),
+    ("__DESCRIPTION__", html.escape(meta["description"])),
+    ("__FOOTER_NOTE__", meta["footer"]),
+):
+    assert token in tpl, token
+    tpl = tpl.replace(token, value)
+open(OUT, "w", encoding="utf-8").write(tpl)
 
 counts = {}
 for s in stations_out:
