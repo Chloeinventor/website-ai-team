@@ -172,6 +172,8 @@
     font-weight: 600; padding: 8px 12px;
   }
   .regions button span { font-weight: 500; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .setup-sub { margin: 4px 0 6px; font-size: 12px; font-weight: 700; color: var(--muted); }
+  .regions button:disabled { opacity: .45; }
   .regions button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
   .setup-row { display: flex; gap: 8px; align-items: center; }
   .setup-row label { font-size: 13px; color: var(--muted); flex: none; }
@@ -361,7 +363,10 @@
 
     <div class="card setup">
       <h2>Game</h2>
+      <p class="setup-sub" id="regions-label" hidden>Type</p>
       <div class="regions" id="regions" role="group" aria-label="Region"></div>
+      <p class="setup-sub" id="areas-label" hidden>Area</p>
+      <div class="regions" id="areas" role="group" aria-label="Area" hidden></div>
       <div class="setup-row">
         <label for="count" id="count-label">How many</label>
         <select id="count">
@@ -901,7 +906,7 @@
   };
   const HINT_PENALTY = 10000;
   const game = {
-    region: "all", count: "20", pool: [], queue: [], total: 0, current: null,
+    region: "all", area: "all", count: "20", pool: [], queue: [], total: 0, current: null,
     found: 0, skipped: 0, misses: 0, hints: 0, hintLevel: 0, penalty: 0,
     startedAt: 0, finishedAt: 0, tick: 0, done: false
   };
@@ -910,24 +915,50 @@
     try {
       const p = JSON.parse(localStorage.getItem(`${DATA.meta.key}:prefs`) || "{}");
       if (REGIONS.some((r) => r.id === p.region)) game.region = p.region;
+      if (AREAS.some((a) => a.id === p.area)) game.area = p.area;
       if (["10", "20", "50", "all"].includes(p.count)) game.count = p.count;
     } catch (e) { /* storage unavailable */ }
     ui.count.value = game.count;
   }
   function savePrefs() {
-    try { localStorage.setItem(`${DATA.meta.key}:prefs`, JSON.stringify({ region: game.region, count: game.count })); } catch (e) { /* ignore */ }
+    try { localStorage.setItem(`${DATA.meta.key}:prefs`, JSON.stringify({ region: game.region, area: game.area, count: game.count })); } catch (e) { /* ignore */ }
   }
 
+  // Optional second filter (Map Master): area. A place is in the game when
+  // it matches both the type/region button and the area button.
+  const AREAS = (DATA.areas || []).map(([id, name]) => ({ id, name }));
+  const ui_areas = $("areas");
   const inRegion = (s, id) => s.region !== "ctx" && (id === "all" || s.region === id);
-  REGIONS.forEach((r) => {
+  const inArea = (s, id) => id === "all" || (s.info && s.info.admin === id);
+  const inGame = (s) => inRegion(s, game.region) && inArea(s, game.area);
+  function filterButton(box, item, kind) {
     const b = document.createElement("button");
     b.type = "button";
-    b.dataset.region = r.id;
-    const n = stations.filter((s) => inRegion(s, r.id)).length;
-    b.innerHTML = `${r.name}<span>${n} ${WORDS.many}</span>`;
-    b.addEventListener("click", () => { game.region = r.id; savePrefs(); newGame(); });
-    ui.regions.appendChild(b);
-  });
+    b.dataset[kind] = item.id;
+    b.innerHTML = `${item.name}<span></span>`;
+    b.addEventListener("click", () => { game[kind] = item.id; savePrefs(); newGame(); });
+    box.appendChild(b);
+  }
+  REGIONS.forEach((r) => filterButton(ui.regions, r, "region"));
+  AREAS.forEach((a) => filterButton(ui_areas, a, "area"));
+  if (AREAS.length) {
+    ui_areas.hidden = $("areas-label").hidden = $("regions-label").hidden = false;
+  }
+  // Counts follow the other filter, so each button shows what you'd play.
+  function renderFilters() {
+    [...ui.regions.children].forEach((b) => {
+      const n = stations.filter((s) => inRegion(s, b.dataset.region) && inArea(s, game.area)).length;
+      b.lastChild.textContent = `${n} ${WORDS.many}`;
+      b.disabled = n === 0;
+      b.setAttribute("aria-pressed", String(b.dataset.region === game.region));
+    });
+    [...ui_areas.children].forEach((b) => {
+      const n = stations.filter((s) => inRegion(s, game.region) && inArea(s, b.dataset.area)).length;
+      b.lastChild.textContent = `${n} ${WORDS.many}`;
+      b.disabled = n === 0;
+      b.setAttribute("aria-pressed", String(b.dataset.area === game.area));
+    });
+  }
 
   function shuffle(a) {
     a = a.slice();
@@ -1049,13 +1080,13 @@
     hideFact();
     discList.innerHTML = "";
     discEmpty.hidden = false;
-    game.pool = stations.filter((s) => inRegion(s, game.region));
+    game.pool = stations.filter(inGame);
     stations.forEach((s) => { s.active = game.pool.includes(s); setState(s, ""); });
     gRails.classList.toggle("dim", game.region !== "all");
     const n = game.count === "all" ? game.pool.length : Math.min(game.pool.length, Number(game.count));
     game.queue = shuffle(game.pool).slice(0, n);
     game.total = n;
-    [...ui.regions.children].forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.region === game.region)));
+    renderFilters();
     ui.misses.textContent = "0";
     ui.hintBtn.disabled = ui.skipBtn.disabled = false;
     ui.overlay.classList.remove("show");
@@ -1186,10 +1217,11 @@
     ui.rFound.textContent = `${game.found}/${game.total}`;
     ui.rAcc.textContent = `${acc}%`;
     ui.rHints.textContent = game.hints;
-    const roundRegion = regionName(game.region);
+    const area = AREAS.find((a) => a.id === game.area);
+    const roundRegion = regionName(game.region) + (area && area.id !== "all" ? ` in ${area.name}` : "");
     ui.vSub.textContent = `${roundRegion}: ${game.total} ${WORDS.many}` + (game.skipped ? `, ${game.skipped} shown to you.` : ".");
 
-    const key = `${DATA.meta.key}:best:${game.region}:${game.count}`;
+    const key = `${DATA.meta.key}:best:${game.region}:` + (AREAS.length ? `${game.area}:` : "") + game.count;
     let best = null;
     try { best = Number(localStorage.getItem(key)) || null; } catch (e) { /* ignore */ }
     if (game.skipped) {
