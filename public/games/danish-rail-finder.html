@@ -34,6 +34,9 @@
     --l-m2: #f2b800;
     --l-m3: #d6006f;
     --l-m4: #0a7cc1;
+    --c-city: #d62828;
+    --c-major: #f08c00;
+    --c-minor: #2f6fdb;
     --shadow: 0 1px 2px rgba(20, 30, 40, .06), 0 8px 24px rgba(20, 30, 40, .08);
     --radius: 16px;
     font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -58,6 +61,9 @@
       --dot-fill: #17202a;
       --dot-stroke: #dfe7ee;
       --dot-off: #3b4855;
+      --c-city: #ff5a5a;
+      --c-major: #ffa630;
+      --c-minor: #5b9bff;
       --l-regional: #5b9bd5;
       --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .35);
     }
@@ -112,9 +118,9 @@
     .prompt { order: 1; }
     .actions { order: 2; }
     .map-card { order: 3; }
-    .setup { order: 4; }
-    .discovered { order: 5; }
-    .legend { order: 6; }
+    .legend { order: 4; }
+    .setup { order: 5; }
+    .discovered { order: 6; }
   }
 
   .card {
@@ -209,6 +215,17 @@
   .stn.found { fill: var(--ok); stroke: #fff; stroke-width: 1.4px; }
   .stn.skipped { fill: var(--skip); stroke: #fff; stroke-width: 1.4px; }
   .stn.wrong { fill: var(--bad); stroke: var(--bad); }
+  /* Category dots (Map Master): colour shows the kind of place in every state. */
+  .stn.cat-city, .stn.cat-city.found, .stn.cat-city.skipped { fill: var(--c-city); }
+  .stn.cat-major, .stn.cat-major.found, .stn.cat-major.skipped { fill: var(--c-major); }
+  .stn.cat-minor, .stn.cat-minor.found, .stn.cat-minor.skipped { fill: var(--c-minor); }
+  .stn[class*="cat-"] { stroke: #fff; stroke-width: 1px; }
+  .stn[class*="cat-"].found { stroke: var(--ink); stroke-width: 2.2px; }
+  .stn[class*="cat-"].skipped { stroke: var(--skip); stroke-width: 2.4px; }
+  .stn[class*="cat-"].wrong { fill: var(--ink); stroke: var(--ink); }
+  .stn[class*="cat-"].off { fill: var(--dot-off); stroke: none; }
+  .legend .dot { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid #fff; box-shadow: 0 0 0 1px var(--line); }
+  .legend small { color: var(--muted); }
   .hover-ring { fill: none; stroke: var(--accent); stroke-width: 2px; vector-effect: non-scaling-stroke; pointer-events: none; }
   .pulse { fill: var(--accent); pointer-events: none; opacity: 0; }
   .pulse.on { animation: pulse 1.1s ease-out infinite; }
@@ -275,7 +292,7 @@
 
   /* ---------- Discovered list & fact card ---------- */
   .discovered { padding: 16px 18px; }
-  .discovered ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+  .discovered ul { max-height: 260px; overflow-y: auto; list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
   .discovered li button {
     padding: 5px 10px; font-size: 13px; border-radius: 99px; border: none;
     background: var(--ok-soft); color: var(--ok);
@@ -287,7 +304,7 @@
     max-height: calc(100% - 90px); overflow-y: auto;
     padding: 16px 18px 18px; z-index: 2; animation: rise .35s ease-out;
   }
-  .fact[hidden] { display: none; }
+  .fact[hidden], .fact [hidden] { display: none; }
   @media (max-width: 860px) { .fact { max-height: 60%; padding: 14px 16px 16px; } .fact h3 { font-size: 21px; } }
   .fact-close {
     position: absolute; top: 8px; right: 8px; width: 32px; height: 32px; padding: 0;
@@ -403,7 +420,7 @@
 <footer>
   Station positions: <a href="https://github.com/trainline-eu/stations">Trainline stations dataset</a> (ODbL), plus hand-placed Metro and local-line stops.
   Coastline © <a href="https://www.openstreetmap.org/copyright" style="color:inherit">OpenStreetMap</a> contributors (ODbL), via geo-maps.
-  Lines are drawn station to station, so curves are simplified. Bornholm has no railway, so it isn't shown.<br>Start smaller with <a href="danish-city-finder.html">Danish City Finder</a>, zoom in on <a href="danish-rail-finder-sjaelland.html">Sjælland only</a>, or learn about the towns in <a href="denmark-town-explorer.html">Denmark Town Explorer</a>.
+  Lines are drawn station to station, so curves are simplified. Bornholm has no railway, so it isn't shown.<br>Start smaller with <a href="danish-city-finder.html">Danish City Finder</a>, zoom in on <a href="danish-rail-finder-sjaelland.html">Sjælland only</a>, learn about the towns in <a href="denmark-town-explorer.html">Denmark Town Explorer</a>, or find every town in <a href="denmark-map-master.html">Denmark Map Master</a>.
 </footer>
 
 <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="victory-title">
@@ -450,7 +467,14 @@
   }));
   const WORDS = Object.assign({ one: "station", many: "stops", kicker: "Find this station" }, DATA.meta.words);
   const hasLines = DATA.lines.length > 0;
-  document.getElementById("legend").hidden = !hasLines;
+  const CATS = DATA.meta.categories || null;
+  const CAT_SIZE = { city: 1.45, major: 1.15, minor: 0.9 };
+  const legendBox = document.getElementById("legend");
+  legendBox.hidden = !hasLines && !CATS;
+  if (CATS) {
+    legendBox.querySelector("ul").innerHTML = Object.keys(CATS).map((c) =>
+      `<li class="wide"><i class="dot" style="background:var(--c-${c})"></i>${CATS[c][0]} <small>${CATS[c][1]}</small></li>`).join("");
+  }
   document.getElementById("discovered").hidden = !stations.some((s) => s.info);
   DATA.lines.forEach((l) => {
     const seen = new Set();
@@ -558,7 +582,8 @@
   stations.forEach((s) => {
     const kinds = new Set(s.lines.map((l) => l.t));
     s.hub = kinds.size > 1 || s.lines.length > 2;
-    s.el = el("circle", { cx: s.x, cy: s.y, r: 1, class: "stn" + (s.hub ? " hub" : "") }, gStations);
+    s.base = "stn" + (s.hub ? " hub" : "") + (s.info && s.info.cat ? ` cat-${s.info.cat}` : "");
+    s.el = el("circle", { cx: s.x, cy: s.y, r: 1, class: s.base }, gStations);
   });
   const pulse = el("circle", { class: "pulse", r: 1 }, svg);
   const hoverRing = el("circle", { class: "hover-ring", r: 1, visibility: "hidden" }, svg);
@@ -604,6 +629,7 @@
       if (!s.active) r = base * 0.55;
       else if (s.state === "found" || s.state === "skipped") r = base * 1.1;
       if (s.hub && s.active) r *= 1.15;
+      if (s.info && s.info.cat) r *= CAT_SIZE[s.info.cat] || 1;
       s.el.setAttribute("r", (r * unit).toFixed(4));
       s.r = r;
     });
@@ -949,7 +975,8 @@
 
   const regionName = (id) => (REGIONS.find((r) => r.id === id) || { name: id }).name;
   function clue(s) {
-    return s.info ? `It's in <b>${regionName(s.region)}</b>.` : `Served by: <b>${servedBy(s)}</b>.`;
+    if (!s.info) return `Served by: <b>${servedBy(s)}</b>.`;
+    return `It's in <b>${s.info.admin ? DATA.meta.admin[s.info.admin] : regionName(s.region)}</b>.`;
   }
 
   /* ---------- Fact card & discovered list ---------- */
@@ -962,10 +989,16 @@
     fact.kicker.textContent = why === "found" ? "Found it!" : why === "revealed" ? "Here it is" : "Discovered";
     fact.box.classList.toggle("revealed", why === "revealed");
     fact.name.textContent = s.name;
-    fact.region.textContent = regionName(s.region);
+    const bits = [];
+    if (s.info.cat) bits.push(CATS[s.info.cat][0]);
+    bits.push(s.info.admin ? DATA.meta.admin[s.info.admin] : regionName(s.region));
+    if (s.info.cat) bits.push(s.info.pop ? `≈ ${s.info.pop.toLocaleString("en-US")} inhabitants` : "population not listed");
+    fact.region.textContent = bits.join(" · ");
     fact.tags.innerHTML = "";
-    s.info.tags.forEach((t) => { const li = document.createElement("li"); li.textContent = t; fact.tags.appendChild(li); });
-    fact.text.textContent = s.info.text;
+    (s.info.tags || []).forEach((t) => { const li = document.createElement("li"); li.textContent = t; fact.tags.appendChild(li); });
+    fact.tags.hidden = !(s.info.tags || []).length;
+    fact.text.textContent = s.info.text || "";
+    fact.text.hidden = !s.info.text;
     fact.box.hidden = false;
     fact.help.hidden = true;
     fact.box.scrollTop = 0;
@@ -996,7 +1029,7 @@
 
   function setState(s, state) {
     s.state = state;
-    s.el.setAttribute("class", "stn" + (s.hub ? " hub" : "") + (s.active ? "" : " off") + (state ? " " + state : ""));
+    s.el.setAttribute("class", s.base + (s.active ? "" : " off") + (state ? " " + state : ""));
   }
 
   function renderProgress() {

@@ -46,7 +46,8 @@ VARIANTS = {
             "footer": "Lines are drawn station to station, so curves are simplified. Bornholm has no railway, so it isn't shown."
                       "<br>Start smaller with <a href=\"danish-city-finder.html\">Danish City Finder</a>,"
                       " zoom in on <a href=\"danish-rail-finder-sjaelland.html\">Sjælland only</a>,"
-                      " or learn about the towns in <a href=\"denmark-town-explorer.html\">Denmark Town Explorer</a>.",
+                      " learn about the towns in <a href=\"denmark-town-explorer.html\">Denmark Town Explorer</a>,"
+                      " or find every town in <a href=\"denmark-map-master.html\">Denmark Map Master</a>.",
             "hintKm": {"kbh": 12, "other": 28},
             "revealKm": 9,
         },
@@ -126,7 +127,8 @@ VARIANTS["towns"] = {
         "description": "A geography puzzle: find 72 Danish cities and towns on the map and learn what each one is famous for.",
         "key": "denmark-town-explorer",
         "footer": "Dots mark town centres. Bornholm is shown in the box at the bottom right; distances use its real position."
-                  "<br>More map games: <a href=\"danish-city-finder.html\">Danish City Finder</a>,"
+                  "<br>More map games: <a href=\"denmark-map-master.html\">Denmark Map Master</a> (all 342 towns),"
+                  " <a href=\"danish-city-finder.html\">Danish City Finder</a>,"
                   " <a href=\"danish-rail-finder.html\">Danish Rail Finder</a> and"
                   " <a href=\"danish-rail-finder-sjaelland.html\">Sjælland Rail Finder</a>.",
         "hintKm": {"kbh": 40, "other": 60},
@@ -145,6 +147,68 @@ VARIANTS["towns"] = {
     "jumps": [
         ["Copenhagen & North Zealand", 55.5, 12.0, 56.15, 12.75],
         ["Funen", 54.8, 9.65, 55.65, 10.95],
+        ["South Jutland", 54.85, 8.0, 55.8, 9.95],
+        ["Bornholm", 54.58, 12.6, 54.95, 13.15],
+    ],
+    "deco": [
+        ["Jylland", 9.25, 56.25, "region-lbl", 20], ["Fyn", 10.35, 55.24, "region-lbl", 15],
+        ["Sjælland", 11.55, 55.47, "region-lbl", 17], ["Sverige", 12.95, 56.2, "region-lbl", 13],
+        ["Deutschland", 9.6, 54.6, "region-lbl", 12], ["Kattegat", 11.4, 56.75, "sea-lbl", 14],
+        ["Skagerrak", 9.2, 57.65, "sea-lbl", 14], ["Nordsøen", 8.3, 57.3, "sea-lbl", 14],
+        ["Østersøen", 12.3, 54.56, "sea-lbl", 13],
+    ],
+}
+
+VARIANTS["places"] = {
+    "kind": "places",
+    "bbox": (7.95, 13.2, 54.52, 57.78),
+    "margin": {"dk": 60, "se": 460, "de": 460},
+    "eps": {"dk": 0.22, "se": 0.88, "de": 0.88},
+    "inset": {"minLon": 14.5, "shift": (-2.05, -0.38), "label": "Bornholm"},
+    "places": {
+        "cityMin": 40000,
+        "majorMin": 10000,
+        "rename": {"Copenhagen": "København", "Århus": "Aarhus", "Skaerbaek": "Skærbæk"},
+        "drop": ["Christianshavn", "Vanløse"],  # districts of Copenhagen, not towns
+        # Well-known places too small for GeoNames' 1,000+ list (taken from towns.py).
+        "add": ["Klampenborg", "Gudhjem", "Svaneke", "Blåvand", "Klitmøller"],
+    },
+    "meta": {
+        "title": "Denmark Map Master",
+        "tagline": "Every city, major town and minor town in Denmark on one map",
+        "description": "A geography puzzle with every Danish city and town: find 342 places, colour-coded as cities, major towns and minor towns.",
+        "key": "denmark-map-master",
+        "credits": "Places and populations: <a href=\"https://www.geonames.org/\">GeoNames</a> (CC BY 4.0), via the"
+                   " all-the-cities package. Population figures are GeoNames estimates and can be a few years old.",
+        "footer": "Bornholm is shown in the box at the bottom right; distances use its real position."
+                  "<br>More map games: <a href=\"denmark-town-explorer.html\">Denmark Town Explorer</a>,"
+                  " <a href=\"danish-rail-finder.html\">Danish Rail Finder</a>,"
+                  " <a href=\"danish-rail-finder-sjaelland.html\">Sjælland Rail Finder</a> and"
+                  " <a href=\"danish-city-finder.html\">Danish City Finder</a>.",
+        "hintKm": {"kbh": 40, "other": 50},
+        "revealKm": 20,
+        "words": {"one": "place", "many": "places", "kicker": "Find this place"},
+        "categories": {
+            "city": ["City", "40,000+ people"],
+            "major": ["Major town", "10,000–39,999 people"],
+            "minor": ["Minor town", "under 10,000 people"],
+        },
+        "admin": {
+            "hov": "Capital Region", "sjl": "Region Zealand", "syd": "Southern Denmark",
+            "mid": "Central Jutland", "nord": "North Jutland",
+        },
+    },
+    "regions": [
+        ["all", "Everything"],
+        ["city", "Cities"],
+        ["major", "Major towns"],
+        ["minor", "Minor towns"],
+    ],
+    "jumps": [
+        ["Copenhagen", 55.55, 12.15, 55.9, 12.7],
+        ["North Zealand", 55.8, 11.8, 56.15, 12.65],
+        ["Funen", 54.8, 9.65, 55.65, 10.95],
+        ["Aarhus", 55.95, 9.8, 56.5, 10.95],
         ["South Jutland", 54.85, 8.0, 55.8, 9.95],
         ["Bornholm", 54.58, 12.6, 54.95, 13.15],
     ],
