@@ -204,6 +204,15 @@ VARIANTS["places"] = {
         ["major", "Major towns"],
         ["minor", "Minor towns"],
     ],
+    # Second filter, combined with the type buttons above.
+    "areas": [
+        ["all", "All of Denmark"],
+        ["hov", "Capital Region & Bornholm"],
+        ["sjl", "Region Zealand"],
+        ["syd", "Southern Denmark"],
+        ["mid", "Central Jutland"],
+        ["nord", "North Jutland"],
+    ],
     "jumps": [
         ["Copenhagen", 55.55, 12.15, 55.9, 12.7],
         ["North Zealand", 55.8, 11.8, 56.15, 12.65],
