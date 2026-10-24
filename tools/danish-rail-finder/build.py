@@ -55,7 +55,7 @@ with open(os.path.join(DATA_DIR, "stations.csv"), newline="") as f:
             score[n] = s
 coords.update(MANUAL)
 
-if V.get("kind") == "towns":
+if V.get("kind") in ("towns", "places"):
     from towns import TOWNS
     LINES = []
 missing = [(label, n) for _, label, seq in LINES for n in seq if n not in coords]
@@ -100,6 +100,55 @@ if V.get("kind") == "towns":
     for name, lat, lon, reg, tags, text in TOWNS:
         x, y = place(lon, lat)
         stations_out.append([name, round(x, 2), round(y, 2), reg, lat, lon, {"tags": tags, "text": text}])
+
+if V.get("kind") == "places":
+    # Every Danish place GeoNames lists with 1,000+ inhabitants, split into
+    # cities / major towns / minor towns by population. Towns that have a
+    # description in towns.py keep it.
+    from towns import TOWNS
+    P = V["places"]
+    ADMIN = {"17": "hov", "18": "mid", "19": "nord", "20": "sjl", "21": "syd"}
+    def km(a, b):
+        return 111.2 * math.hypot(a[0] - b[0], (a[1] - b[1]) * COS)
+    raw = [p for p in json.load(open(os.path.join(DATA_DIR, "dk_places.json")))
+           if p["name"] not in P["drop"]]
+    places = []
+    for p in raw:
+        name = P["rename"].get(p["name"], p["name"])
+        places.append({"name": name, "lat": p["lat"], "lon": p["lon"], "pop": p["pop"] or None,
+                       "admin": ADMIN[p["admin"]]})
+    described = {t[0]: t for t in TOWNS}
+    for name in P["add"]:
+        t = described[name]
+        places.append({"name": name, "lat": t[1], "lon": t[2], "pop": None, "admin": t[3]})
+    def category(pop):
+        if pop and pop >= P["cityMin"]:
+            return "city"
+        if pop and pop >= P["majorMin"]:
+            return "major"
+        return "minor"
+    # Repeated names: a place far bigger than its namesakes keeps the plain
+    # name; the others get the nearest bigger place added.
+    big = [p for p in places if category(p["pop"]) != "minor"]
+    groups = {}
+    for p in places:
+        groups.setdefault(p["name"], []).append(p)
+    for same in groups.values():
+        if len(same) < 2:
+            continue
+        same.sort(key=lambda p: -(p["pop"] or 0))
+        if (same[0]["pop"] or 0) >= 5 * (same[1]["pop"] or 1):
+            same = same[1:]
+        for p in same:
+            near = min((b for b in big if b is not p), key=lambda b: km((p["lat"], p["lon"]), (b["lat"], b["lon"])))
+            p["name"] = f'{p["name"]} (near {near["name"]})'
+    for p in places:
+        info = {"cat": category(p["pop"]), "pop": p["pop"], "admin": p["admin"]}
+        t = described.get(p["name"])
+        if t and km((p["lat"], p["lon"]), (t[1], t[2])) < 6:
+            info.update({"tags": t[4], "text": t[5]})
+        x, y = place(p["lon"], p["lat"])
+        stations_out.append([p["name"], round(x, 2), round(y, 2), info["cat"], p["lat"], p["lon"], info])
 
 # ---------------------------------------------------------------- land
 def clip_ring(ring, xmin, ymin, xmax, ymax):
