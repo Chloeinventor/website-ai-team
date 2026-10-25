@@ -96,6 +96,10 @@
   h1 { font-size: clamp(18px, 2.4vw, 22px); margin: 0; letter-spacing: -.01em; }
   .tagline { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
   .stats { display: flex; gap: 8px; flex-wrap: wrap; }
+  /* ---------- Anonymous player name ---------- */
+  .stat.player .stat-value { font-size: 15px; white-space: nowrap; }
+  .player-row { display: flex; align-items: center; gap: 6px; }
+  .player-reroll { padding: 2px 6px; font-size: 15px; line-height: 1.2; border-radius: 8px; }
   .stat {
     display: flex; flex-direction: column; min-width: 78px; padding: 6px 12px;
     border: 1px solid var(--line); border-radius: 12px; background: var(--bg);
@@ -342,6 +346,10 @@
     </div>
   </div>
   <div class="stats">
+    <div class="stat player" title="An anonymous name made up by the game. It's saved only on this device, and you can change it any time.">
+      <span class="stat-label">Player</span>
+      <span class="player-row"><span class="stat-value" id="player-name">…</span><button type="button" class="player-reroll" id="player-reroll" aria-label="Give me a new anonymous name" title="New anonymous name">🎲</button></span>
+    </div>
     <div class="stat"><span class="stat-label">Found</span><span class="stat-value" id="score">0/0</span></div>
     <div class="stat"><span class="stat-label">Time</span><span class="stat-value" id="timer">0:00</span></div>
     <div class="stat"><span class="stat-label">Misses</span><span class="stat-value" id="misses">0</span></div>
@@ -423,6 +431,7 @@
 </main>
 
 <footer>
+  No login, no tracking: your anonymous player name, settings and best times are stored only on this device.<br>
   Places and populations: <a href="https://www.geonames.org/">GeoNames</a> (CC BY 4.0), via the all-the-cities package. Population figures are GeoNames estimates and can be a few years old.
   Coastline © <a href="https://www.openstreetmap.org/copyright" style="color:inherit">OpenStreetMap</a> contributors (ODbL), via geo-maps.
   Bornholm is shown in the box at the bottom right; distances use its real position.<br>More map games: <a href="denmark-town-explorer.html">Denmark Town Explorer</a>, <a href="danish-rail-finder.html">Danish Rail Finder</a>, <a href="danish-rail-finder-sjaelland.html">Sjælland Rail Finder</a> and <a href="danish-city-finder.html">Danish City Finder</a>.
@@ -453,6 +462,28 @@
 </div>
 <div class="confetti" id="confetti" aria-hidden="true"></div>
 
+<script>
+/* Anonymous player name: made up here, stored only on this device
+   (shared by all the map games on this site), never sent anywhere. */
+(function () {
+  "use strict";
+  const KEY = "dk-map-games:player";
+  // Common-gender nouns only, so the uninflected adjective is always correct Danish.
+  const ADJ = ["Blå", "Rød", "Grøn", "Gul", "Hurtig", "Modig", "Klog", "Glad", "Vild", "Stille", "Lille", "Kvik", "Frisk", "Sjov", "Rask"];
+  const NOUN = ["Måge", "Odder", "Ræv", "Ugle", "Sæl", "Hjort", "Svane", "Stork", "Hare", "Grævling", "Lunde", "Krabbe", "Viking", "Sild", "Ørn"];
+  const pick = (list) => list[Math.floor(Math.random() * list.length)];
+  const make = () => `${pick(ADJ)} ${pick(NOUN)} ${1 + Math.floor(Math.random() * 99)}`;
+  const save = () => { try { localStorage.setItem(KEY, name); } catch (e) { /* storage unavailable */ } };
+  let name = null;
+  try { name = localStorage.getItem(KEY); } catch (e) { /* storage unavailable */ }
+  if (!name) { name = make(); save(); }
+  const out = document.getElementById("player-name");
+  const render = () => { out.textContent = name; };
+  document.getElementById("player-reroll").addEventListener("click", () => { name = make(); save(); render(); });
+  render();
+  window.DKPlayer = { name: () => name };
+})();
+</script>
 <script>
 (function () {
   "use strict";
@@ -1195,6 +1226,7 @@
   }
 
   function finish() {
+    if (window.DKPlayer) document.getElementById("victory-title").textContent = `Tillykke, ${window.DKPlayer.name()}!`;
     game.done = true;
     game.finishedAt = performance.now();
     stopClock();
