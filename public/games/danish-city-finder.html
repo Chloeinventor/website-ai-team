@@ -84,6 +84,10 @@
   h1 { font-size: clamp(18px, 2.4vw, 22px); margin: 0; letter-spacing: -.01em; }
   .tagline { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
   .stats { display: flex; gap: 8px; flex-wrap: wrap; }
+  /* ---------- Anonymous player name ---------- */
+  .stat.player .stat-value { font-size: 15px; white-space: nowrap; }
+  .player-row { display: flex; align-items: center; gap: 6px; }
+  .player-reroll { padding: 2px 6px; font-size: 15px; line-height: 1.2; border-radius: 8px; }
   .stat {
     display: flex; flex-direction: column; align-items: flex-start;
     min-width: 84px; padding: 6px 14px;
@@ -266,6 +270,10 @@
     </div>
   </div>
   <div class="stats">
+    <div class="stat player" title="An anonymous name made up by the game. It's saved only on this device, and you can change it any time.">
+      <span class="stat-label">Player</span>
+      <span class="player-row"><span class="stat-value" id="player-name">…</span><button type="button" class="player-reroll" id="player-reroll" aria-label="Give me a new anonymous name" title="New anonymous name">🎲</button></span>
+    </div>
     <div class="stat"><span class="stat-label">Found</span><span class="stat-value" id="score">0/10</span></div>
     <div class="stat"><span class="stat-label">Time</span><span class="stat-value" id="timer">0:00</span></div>
     <div class="stat"><span class="stat-label">Misses</span><span class="stat-value" id="misses">0</span></div>
@@ -295,7 +303,7 @@
   </section>
 </main>
 
-<footer>Tip: use Tab and Enter to pick dots with the keyboard. Map outlines are simplified.<br>Ready for more? Try <a href="denmark-town-explorer.html" style="color:inherit">Denmark Town Explorer</a>, with 72 towns and what they're famous for, <a href="denmark-map-master.html" style="color:inherit">Denmark Map Master</a>, with every town in Denmark, or <a href="danish-rail-finder.html" style="color:inherit">Danish Rail Finder</a>, with every train and metro stop in Denmark.</footer>
+<footer>No login, no tracking: your anonymous player name, settings and best times are stored only on this device.<br>Tip: use Tab and Enter to pick dots with the keyboard. Map outlines are simplified.<br>Ready for more? Try <a href="denmark-town-explorer.html" style="color:inherit">Denmark Town Explorer</a>, with 72 towns and what they're famous for, <a href="denmark-map-master.html" style="color:inherit">Denmark Map Master</a>, with every town in Denmark, or <a href="danish-rail-finder.html" style="color:inherit">Danish Rail Finder</a>, with every train and metro stop in Denmark.</footer>
 
 <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="victory-title">
   <div class="card victory">
@@ -319,6 +327,28 @@
 </div>
 <div class="confetti" id="confetti" aria-hidden="true"></div>
 
+<script>
+/* Anonymous player name: made up here, stored only on this device
+   (shared by all the map games on this site), never sent anywhere. */
+(function () {
+  "use strict";
+  const KEY = "dk-map-games:player";
+  // Common-gender nouns only, so the uninflected adjective is always correct Danish.
+  const ADJ = ["Blå", "Rød", "Grøn", "Gul", "Hurtig", "Modig", "Klog", "Glad", "Vild", "Stille", "Lille", "Kvik", "Frisk", "Sjov", "Rask"];
+  const NOUN = ["Måge", "Odder", "Ræv", "Ugle", "Sæl", "Hjort", "Svane", "Stork", "Hare", "Grævling", "Lunde", "Krabbe", "Viking", "Sild", "Ørn"];
+  const pick = (list) => list[Math.floor(Math.random() * list.length)];
+  const make = () => `${pick(ADJ)} ${pick(NOUN)} ${1 + Math.floor(Math.random() * 99)}`;
+  const save = () => { try { localStorage.setItem(KEY, name); } catch (e) { /* storage unavailable */ } };
+  let name = null;
+  try { name = localStorage.getItem(KEY); } catch (e) { /* storage unavailable */ }
+  if (!name) { name = make(); save(); }
+  const out = document.getElementById("player-name");
+  const render = () => { out.textContent = name; };
+  document.getElementById("player-reroll").addEventListener("click", () => { name = make(); save(); render(); });
+  render();
+  window.DKPlayer = { name: () => name };
+})();
+</script>
 <script>
 (function () {
   "use strict";
@@ -646,6 +676,7 @@
   }
 
   function finish() {
+    if (window.DKPlayer) document.getElementById("victory-title").textContent = `Tillykke, ${window.DKPlayer.name()}!`;
     state.done = true;
     state.finishedAt = performance.now();
     stopClock();
