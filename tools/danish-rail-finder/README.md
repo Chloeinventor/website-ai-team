@@ -1,12 +1,8 @@
 # Map games: build tools
 
-These pages are generated. Edit the files here, then rebuild:
+These pages are generated. Edit the files here, then rebuild.
 
-- `public/games/danish-rail-finder.html` (variant `denmark`)
-- `public/games/danish-rail-finder-sjaelland.html` (variant `sjaelland`)
-- `public/games/denmark-town-explorer.html` (variant `towns`)
-- `public/games/denmark-map-master.html` (variant `places`)
-- `public/games/index.html`, the games start page (`build_hub.py`; the site redirects `/games` here)
+**On the website, the games are sold as "Danmark på kortet" levels** (see "Levels" below). The older free pages (rail finder, Sjælland, Town Explorer, Map Master, start page) are no longer published: their URLs redirect to `/games/levels`. Their variants still build, for testing.
 
 The files:
 
@@ -32,20 +28,37 @@ mkdir -p atc && npm pack all-the-cities@3.1.0 && tar xzf all-the-cities-3.1.0.tg
 cd -
 python3 -I tools/danish-rail-finder/extract_neighbours.py /tmp/rail-data/package/map.geo.json /tmp/rail-data/nbrs.json
 python3 -I tools/danish-rail-finder/extract_places.py /tmp/rail-data/atc/package/cities.pbf /tmp/rail-data/dk_places.json
-python3 -I tools/danish-rail-finder/build.py /tmp/rail-data tools/danish-rail-finder/template.html public/games/danish-rail-finder.html denmark
-python3 -I tools/danish-rail-finder/build.py /tmp/rail-data tools/danish-rail-finder/template.html public/games/danish-rail-finder-sjaelland.html sjaelland
-python3 -I tools/danish-rail-finder/build.py /tmp/rail-data tools/danish-rail-finder/template.html public/games/denmark-town-explorer.html towns
-python3 -I tools/danish-rail-finder/build.py /tmp/rail-data tools/danish-rail-finder/template.html public/games/denmark-map-master.html places
-python3 -I tools/danish-rail-finder/build_hub.py public/games/denmark-map-master.html tools/danish-rail-finder/hub.template.html public/games/index.html
+mkdir -p /tmp/games-preview   # old free variants: preview only, not published
+python3 -I tools/danish-rail-finder/build.py /tmp/rail-data tools/danish-rail-finder/template.html /tmp/games-preview/danish-rail-finder.html denmark
+python3 -I tools/danish-rail-finder/build.py /tmp/rail-data tools/danish-rail-finder/template.html /tmp/games-preview/danish-rail-finder-sjaelland.html sjaelland
+python3 -I tools/danish-rail-finder/build.py /tmp/rail-data tools/danish-rail-finder/template.html /tmp/games-preview/denmark-town-explorer.html towns
+python3 -I tools/danish-rail-finder/build.py /tmp/rail-data tools/danish-rail-finder/template.html /tmp/games-preview/denmark-map-master.html places
+python3 -I tools/danish-rail-finder/build_hub.py /tmp/games-preview/denmark-map-master.html tools/danish-rail-finder/hub.template.html /tmp/games-preview/index.html
 ```
 
-Danish City Finder (`public/games/danish-city-finder.html`) is hand-written, not generated: edit it directly. Its texts are in its own `STR` table.
+Danish City Finder (`tools/danish-city-finder/danish-city-finder.html`) is hand-written, not generated, and no longer published on the website. Its texts are in its own `STR` table.
 
 The build stops and lists the names if a line refers to a station it can't find.
 
 To add another variant, add an entry to `variants.py`. Stations where `region()` returns `None` are left out of the game. Any of those that are next to a playable station still appear as grey context dots.
 
-## itch.io levels ("Danmark på kortet")
+## Levels ("Danmark på kortet")
+
+Built into `games-private/` (not `public/`), served by the website's routes:
+
+```sh
+D=/tmp/rail-data
+python3 -I tools/danish-rail-finder/build.py $D tools/danish-rail-finder/template.html games-private/level1.html level1
+for n in 2 3 4 5 6 7 8; do
+  python3 -I tools/danish-rail-finder/build.py $D tools/danish-rail-finder/template.html games-private/level$n.html level$n games-private/level$n.json
+done
+```
+
+The 5th argument splits the map data into a JSON file. The paid level's page then has no map in it: it fetches `/api/games/level-data`, which answers only a device that owns the level. Level 1 (free) keeps its data in the page.
+
+The shop, codes, device limit and Stripe checkout are in `lib/games/` and `app/games/`, `app/api/games/`; the database is in `supabase/migrations/20261107_games_purchases.sql`. Setup: see the "Danmark på kortet" section of `.env.local.example`.
+
+## itch.io levels (optional)
 
 `variants.py` also defines `level1` to `level8`: the games cut into levels from easy to hard, with no place in two levels.
 

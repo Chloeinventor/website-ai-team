@@ -511,7 +511,7 @@
   window.DKPlayer = { name: () => name };
 })();
 </script>
-<script>
+<script id="game-src"__GAME_TYPE__>
 (function () {
   "use strict";
 
@@ -565,7 +565,7 @@
       nearMiss1: "{found} of {total} found on the first guess. Your one miss was only {avg} away.",
       nearMissN: "{found} of {total} found on the first guess. Your {n} misses were only {avg} away on average.",
       perfect: "All {total} found on the first guess!",
-      upNext: "Keep going", upBundle: "All levels", upNote: "Opens the level on itch.io, where you can buy it.",
+      upNext: "Keep going", upBundle: "All levels", upNote: "Opens the level, where you can buy it.", owned: "Play",
       dirs: ["north", "northeast", "east", "southeast", "south", "southwest", "west", "northwest"],
       kinds: { main: "main line", regional: "regional line", local: "local line" }
     },
@@ -606,7 +606,7 @@
       nearMiss1: "{found} af {total} fundet i første forsøg. Dit ene forkerte gæt var kun {avg} fra målet.",
       nearMissN: "{found} af {total} fundet i første forsøg. Dine {n} forkerte gæt var i gennemsnit kun {avg} fra målet.",
       perfect: "Alle {total} fundet i første forsøg!",
-      upNext: "Fortsæt", upBundle: "Alle niveauer", upNote: "Åbner niveauet på itch.io, hvor du kan købe det.",
+      upNext: "Fortsæt", upBundle: "Alle niveauer", upNote: "Åbner niveauet, hvor du kan købe det.", owned: "Spil",
       dirs: ["nord", "nordøst", "øst", "sydøst", "syd", "sydvest", "vest", "nordvest"],
       kinds: { main: "hovedstrækning", regional: "regionalbane", local: "lokalbane" }
     }
@@ -1497,6 +1497,8 @@
   }).observe(svg);
   // Level series: link the next level and the bundle on itch.io.
   const NEXT = DATA.meta.next, BUNDLE = DATA.meta.bundle, HOME = DATA.meta.home;
+  // Levels this player has bought (set by the website's loader); shown as "Play", not a price.
+  const OWNS = (n) => (window.__LEVELS_OWNED__ || []).includes(n);
   function renderUpsell() {
     const box = $("upsell");
     if (!NEXT && !BUNDLE) return;
@@ -1506,8 +1508,9 @@
     if (NEXT) {
       nextLink.href = NEXT.url;
       $("up-next-name").textContent = NEXT[lang];
-      $("up-next-price").textContent = NEXT.price[lang];
+      $("up-next-price").textContent = OWNS(NEXT.n) ? tr("owned") : NEXT.price[lang];
     }
+    $("up-bundle").hidden = !BUNDLE || [2, 3, 4, 5, 6, 7, 8].every(OWNS);
     if (BUNDLE) {
       $("up-bundle").href = BUNDLE.url;
       $("up-bundle-price").textContent = BUNDLE.price[lang];
@@ -1571,5 +1574,6 @@
   applyLang();
 })();
 </script>
+<!--__LOADER__-->
 </body>
 </html>

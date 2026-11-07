@@ -12,6 +12,10 @@ from variants import VARIANTS
 
 DATA_DIR, TEMPLATE, OUT = sys.argv[1:4]
 V = VARIANTS[sys.argv[4] if len(sys.argv) > 4 else "denmark"]
+# Optional 5th argument: write the map data to this JSON file instead of into the
+# page. The page then fetches it from the website after the purchase check, so a
+# saved copy of the page has no map in it (used for the paid levels).
+DATA_OUT = sys.argv[5] if len(sys.argv) > 5 else None
 
 # ---------------------------------------------------------------- projection
 LON0, LON1, LAT0, LAT1 = V["bbox"]
@@ -285,7 +289,45 @@ RAIL_CREDITS = ('Station positions: <a href="https://github.com/trainline-eu/sta
 blob = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
 tpl = open(TEMPLATE, encoding="utf-8").read()
 meta = V["meta"]
+LOADER = """<script>
+/* Paid level: the map data comes from the website, only for a player who bought it. */
+(function () {
+  "use strict";
+  var LEVEL = %d;
+  var da = (function () { try { var l = localStorage.getItem("dk-map-games:lang"); if (l) return l === "da"; } catch (e) {} return /^da\\b/i.test(navigator.language || ""); })();
+  function fail(msg) {
+    var box = document.createElement("div");
+    box.setAttribute("role", "alert");
+    box.style.cssText = "position:fixed;inset:auto 16px 16px 16px;margin:auto;max-width:460px;padding:16px 18px;border-radius:12px;background:#fff;color:#1a1d21;box-shadow:0 8px 30px rgba(0,0,0,.18);font:15px/1.45 system-ui,sans-serif;z-index:99";
+    box.innerHTML = msg;
+    document.body.appendChild(box);
+  }
+  fetch("/api/games/level-data?n=" + LEVEL, { credentials: "same-origin", cache: "no-store" })
+    .then(function (r) {
+      if (r.status === 401 || r.status === 403) { location.replace("/games/levels?level=" + LEVEL); throw "redirect"; }
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      var owned = (r.headers.get("X-Levels-Owned") || "").split(",").filter(Boolean).map(Number);
+      return r.json().then(function (d) { window.__LEVELS_OWNED__ = owned; return d; });
+    })
+    .then(function (d) {
+      window.__LEVEL_DATA__ = d;
+      var s = document.createElement("script");
+      s.textContent = document.getElementById("game-src").textContent;
+      document.body.appendChild(s);
+    })
+    .catch(function (e) {
+      if (e === "redirect") return;
+      fail(da ? "Kortet kunne ikke hentes. Tjek din internetforbindelse, og genindlæs siden. Spillet kan kun spilles online på hjemmesiden."
+              : "The map could not be loaded. Check your connection and reload the page. The game can only be played online, on the website.");
+    });
+})();
+</script>"""
+if DATA_OUT:
+    open(DATA_OUT, "w", encoding="utf-8").write(blob)
+    blob = "window.__LEVEL_DATA__"
 for token, value in (
+    ("__GAME_TYPE__", ' type="text/x-game"' if DATA_OUT else ""),
+    ("<!--__LOADER__-->", LOADER % meta["level"] if DATA_OUT else ""),
     ("/*__DATA__*/null", blob),
     ("__TITLE__", html.escape(meta["title"])),
     ("__TAGLINE__", html.escape(meta["tagline"])),

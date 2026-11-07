@@ -320,6 +320,13 @@ BUNDLE_PRICE = {"en": "149 kr", "da": "149 kr."}
 def itch_url(n):
     return f"https://{ITCH_USER}.itch.io/danmark-paa-kortet" + ("" if n == 1 else f"-{n}")
 
+# Where the level links point: "site" (sold on the website, the default) or "itch".
+LEVEL_TARGET = os.environ.get("LEVEL_TARGET", "site")
+if LEVEL_TARGET == "itch":
+    level_url, HOME_URL, BUNDLE_URL = itch_url, f"https://{ITCH_USER}.itch.io", ITCH_BUNDLE
+else:
+    level_url, HOME_URL, BUNDLE_URL = (lambda n: f"/games/level/{n}"), "/games/levels", "/games/levels#bundle"
+
 LEVELS = [
     # n, base variant, short name (en, da), what it holds (en, da)
     (1, "places", ("Capital Region: major towns", "Region Hovedstaden: større byer"),
@@ -359,10 +366,10 @@ def _level_variant(n, base, name, holds):
         "footer": f"{SERIES} is a series of Danish map games, from easy to hard."
                   f" Level 1 is free; every other level is {PRICE['en']}, or {BUNDLE_PRICE['en']} for all of them.",
         "level": n,
-        "home": {"url": f"https://{ITCH_USER}.itch.io", "en": "← All levels", "da": "← Alle niveauer"},
-        "next": nxt and {"url": itch_url(nxt[0]), "en": f"Level {nxt[0]} · {nxt[2][0]}", "da": f"Niveau {nxt[0]} · {nxt[2][1]}",
+        "home": {"url": HOME_URL, "en": "← All levels", "da": "← Alle niveauer"},
+        "next": nxt and {"n": nxt[0], "url": level_url(nxt[0]), "en": f"Level {nxt[0]} · {nxt[2][0]}", "da": f"Niveau {nxt[0]} · {nxt[2][1]}",
                          "price": PRICE},
-        "bundle": {"url": ITCH_BUNDLE, "price": BUNDLE_PRICE},
+        "bundle": {"url": BUNDLE_URL, "price": BUNDLE_PRICE},
     })
     da.update({
         "title": title[1],
