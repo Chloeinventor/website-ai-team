@@ -229,3 +229,75 @@ VARIANTS["places"] = {
         ["Østersøen", 12.3, 54.56, "sea-lbl", 13],
     ],
 }
+
+
+# ---------------------------------------------------------------- Danish
+# Danish versions of each page's texts. The game picks Danish when the
+# browser is Danish (or the player chooses DA); English is the default above.
+_RAIL_WORDS_DA = {"one": "station", "many": "stationer", "kicker": "Find denne station"}
+_RAIL_CREDITS_DA = ('Stationernes placering: <a href="https://github.com/trainline-eu/stations">Trainline stations dataset</a>'
+                    " (ODbL) samt håndplacerede metro- og lokalbanestationer.")
+_ADMIN_DA = {"hov": "Region Hovedstaden", "sjl": "Region Sjælland", "syd": "Region Syddanmark",
+             "mid": "Region Midtjylland", "nord": "Region Nordjylland"}
+_AREAS_DA = {"all": "Hele Danmark", "hov": "Region Hovedstaden og Bornholm", "sjl": "Region Sjælland",
+             "syd": "Region Syddanmark", "mid": "Region Midtjylland", "nord": "Region Nordjylland"}
+_DESC_NOTE_DA = " Bybeskrivelserne findes indtil videre kun på engelsk."
+
+VARIANTS["denmark"]["da"] = {
+    "title": "Danmarks togstationer",
+    "tagline": "Find alle tog-, S-togs-, metro- og letbanestationer i Danmark",
+    "words": _RAIL_WORDS_DA,
+    "credits": _RAIL_CREDITS_DA,
+    "footer": "Linjerne er tegnet fra station til station, så kurverne er forenklede. Bornholm har ingen jernbane og er derfor ikke med."
+              "<br>Start mindre med <a href=\"danish-city-finder.html\">Find byen</a>,"
+              " zoom ind på <a href=\"danish-rail-finder-sjaelland.html\">kun Sjælland</a>,"
+              " lær byerne at kende i <a href=\"denmark-town-explorer.html\">Byopdageren</a>,"
+              " eller find alle byer i <a href=\"denmark-map-master.html\">Kortmester Danmark</a>.",
+    "regions": {"all": "Hele Danmark", "kbh": "København: S-tog og metro", "sjl": "Sjælland, Lolland og Falster",
+                "fyn": "Fyn", "jyl": "Jylland"},
+    "jumps": ["København", "Indre by", "Nordsjælland", "Aarhus", "Odense"],
+}
+VARIANTS["sjaelland"]["da"] = {
+    "title": "Sjællands togstationer",
+    "tagline": "Alle tog-, S-togs-, metro- og lokalbanestationer på Sjælland, Lolland og Falster",
+    "words": _RAIL_WORDS_DA,
+    "credits": _RAIL_CREDITS_DA,
+    "footer": "Linjerne er tegnet fra station til station, så kurverne er forenklede. Grå prikker på den anden side af vandet er ikke med i spillet."
+              "<br>Vil du have hele landet? Spil <a href=\"danish-rail-finder.html\">Danmarks togstationer</a>,"
+              " eller lær byerne at kende i <a href=\"denmark-town-explorer.html\">Byopdageren</a>.",
+    "regions": {"all": "Hele Sjælland", "kbh": "København: S-tog og metro", "nord": "Nordsjælland",
+                "midt": "Midt- og Vestsjælland", "syd": "Sydsjælland, Lolland og Falster"},
+    "jumps": ["København", "Indre by", "Nordsjælland", "Roskilde og Køge", "Lolland-Falster"],
+}
+VARIANTS["towns"]["da"] = {
+    "title": "Byopdageren",
+    "tagline": "Find Danmarks byer, og læs hvad hver by er kendt for",
+    "words": {"one": "by", "many": "byer", "kicker": "Find denne by"},
+    "credits": "Fakta og placeringer er samlet til dette spil.",
+    "footer": "Prikkerne markerer bymidten. Bornholm vises i boksen nederst til højre; afstande regnes ud fra øens rigtige placering."
+              + _DESC_NOTE_DA +
+              "<br>Flere kortspil: <a href=\"denmark-map-master.html\">Kortmester Danmark</a> (alle 342 byer),"
+              " <a href=\"danish-city-finder.html\">Find byen</a>,"
+              " <a href=\"danish-rail-finder.html\">Danmarks togstationer</a> og"
+              " <a href=\"danish-rail-finder-sjaelland.html\">Sjællands togstationer</a>.",
+    "regions": _AREAS_DA,
+    "jumps": ["København og Nordsjælland", "Fyn", "Sønderjylland", "Bornholm"],
+}
+VARIANTS["places"]["da"] = {
+    "title": "Kortmester Danmark",
+    "tagline": "Alle storbyer, større byer og mindre byer i Danmark på ét kort",
+    "words": {"one": "sted", "many": "steder", "kicker": "Find dette sted"},
+    "credits": "Steder og indbyggertal: <a href=\"https://www.geonames.org/\">GeoNames</a> (CC BY 4.0) via all-the-cities-pakken."
+               " Indbyggertallene er GeoNames' skøn og kan være et par år gamle.",
+    "footer": "Bornholm vises i boksen nederst til højre; afstande regnes ud fra øens rigtige placering." + _DESC_NOTE_DA +
+              "<br>Flere kortspil: <a href=\"denmark-town-explorer.html\">Byopdageren</a>,"
+              " <a href=\"danish-rail-finder.html\">Danmarks togstationer</a>,"
+              " <a href=\"danish-rail-finder-sjaelland.html\">Sjællands togstationer</a> og"
+              " <a href=\"danish-city-finder.html\">Find byen</a>.",
+    "regions": {"all": "Alle", "city": "Storbyer", "major": "Større byer", "minor": "Mindre byer"},
+    "areas": _AREAS_DA,
+    "jumps": ["København", "Nordsjælland", "Fyn", "Aarhus", "Sønderjylland", "Bornholm"],
+    "categories": {"city": ["Storby", "40.000+ indbyggere"], "major": ["Større by", "10.000–39.999 indbyggere"],
+                   "minor": ["Mindre by", "under 10.000 indbyggere"]},
+    "admin": _ADMIN_DA,
+}
