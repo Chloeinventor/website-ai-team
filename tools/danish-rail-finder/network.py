@@ -98,7 +98,7 @@ LINES = [
         "Holmstrup", "Tommerup", "Skalbjerg", "Bred", "Årup", "Gelsted", "Ejby",
         "Nørre Aaby", "Kauslunde", "Middelfart", "Fredericia"]),
     (MAIN, "København – Ringsted (high-speed)", ["København H", "Ny Ellebjerg", "Køge Nord", "Ringsted"]),
-    (MAIN, "Øresund line", ["København H", "Ørestad", "Tårnby", "Københavns Lufthavn"]),
+    (MAIN, "Øresundsbanen", ["København H", "Ørestad", "Tårnby", "Københavns Lufthavn"]),
     (MAIN, "Fredericia – Aarhus – Aalborg", [
         "Fredericia", "Børkop", "Brejning", "Vejle", "Hedensted", "Horsens", "Skanderborg",
         "Hørning", "Viby J", "Aarhus", "Hinnerup", "Hadsten", "Langå", "Randers", "Hobro",

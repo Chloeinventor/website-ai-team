@@ -6,13 +6,15 @@ These pages are generated. Edit the files here, then rebuild:
 - `public/games/danish-rail-finder-sjaelland.html` (variant `sjaelland`)
 - `public/games/denmark-town-explorer.html` (variant `towns`)
 - `public/games/denmark-map-master.html` (variant `places`)
+- `public/games/index.html`, the games start page (`build_hub.py`; the site redirects `/games` here)
 
 The files:
 
 - `network.py`: the lines (ordered station lists), stations missing from the dataset (Metro, a few local-line stops) and display-name fixes. Shared by every variant.
 - `towns.py`: the towns for Town Explorer, with coordinates, region, "known for" tags and the description shown when a town is found.
-- `variants.py`: per-page settings: map extent, which stations are playable, regions, quick-jump buttons, map labels, title and footer.
-- `template.html`: the game (HTML, CSS, JS). The build fills in `/*__DATA__*/null` and the `__TITLE__`-style tokens.
+- `variants.py`: per-page settings: map extent, which stations are playable, regions, quick-jump buttons, map labels, title and footer, plus each page's Danish texts (`"da"`).
+- `template.html`: the game (HTML, CSS, JS). The build fills in `/*__DATA__*/null` and the `__TITLE__`-style tokens. Interface texts in English and Danish are in its `STR` table; the game picks Danish for Danish browsers, and the DA/EN switch remembers the choice.
+- `hub.template.html` + `build_hub.py`: the start page, with its own English/Danish texts. Its hero map is drawn from Map Master's data.
 - `build.py`: projects station coordinates, simplifies the coastline and writes one self-contained page.
 - `extract_neighbours.py`: cuts Denmark, Sweden and Germany out of the world land file.
 - `extract_places.py`: pulls every Danish place (GeoNames, 1,000+ inhabitants, with population) out of the all-the-cities data file. Map Master sorts these into cities (40,000+), major towns (10,000–39,999) and minor towns.
@@ -34,7 +36,10 @@ python3 -I tools/danish-rail-finder/build.py /tmp/rail-data tools/danish-rail-fi
 python3 -I tools/danish-rail-finder/build.py /tmp/rail-data tools/danish-rail-finder/template.html public/games/danish-rail-finder-sjaelland.html sjaelland
 python3 -I tools/danish-rail-finder/build.py /tmp/rail-data tools/danish-rail-finder/template.html public/games/denmark-town-explorer.html towns
 python3 -I tools/danish-rail-finder/build.py /tmp/rail-data tools/danish-rail-finder/template.html public/games/denmark-map-master.html places
+python3 -I tools/danish-rail-finder/build_hub.py public/games/denmark-map-master.html tools/danish-rail-finder/hub.template.html public/games/index.html
 ```
+
+Danish City Finder (`public/games/danish-city-finder.html`) is hand-written, not generated: edit it directly. Its texts are in its own `STR` table.
 
 The build stops and lists the names if a line refers to a station it can't find.
 

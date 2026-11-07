@@ -100,6 +100,9 @@
   .stat.player .stat-value { font-size: 15px; white-space: nowrap; }
   .player-row { display: flex; align-items: center; gap: 6px; }
   .player-reroll { padding: 2px 6px; font-size: 15px; line-height: 1.2; border-radius: 8px; }
+  .lang-switch { display: flex; gap: 4px; margin-top: 6px; }
+  .lang-switch button { padding: 3px 10px; font-size: 12px; border-radius: 99px; }
+  .lang-switch button[aria-pressed="true"] { background: var(--ink); color: var(--panel); border-color: var(--ink); }
   .stat {
     display: flex; flex-direction: column; min-width: 78px; padding: 6px 12px;
     border: 1px solid var(--line); border-radius: 12px; background: var(--bg);
@@ -341,18 +344,22 @@
       </svg>
     </div>
     <div>
-      <h1>__TITLE__</h1>
-      <p class="tagline">__TAGLINE__</p>
+      <h1 id="game-title">__TITLE__</h1>
+      <p class="tagline" id="tagline">__TAGLINE__</p>
+      <div class="lang-switch" role="group" aria-label="Language / Sprog">
+        <button type="button" data-lang="da" lang="da">Dansk</button>
+        <button type="button" data-lang="en" lang="en">English</button>
+      </div>
     </div>
   </div>
   <div class="stats">
-    <div class="stat player" title="An anonymous name made up by the game. It's saved only on this device, and you can change it any time.">
-      <span class="stat-label">Player</span>
-      <span class="player-row"><span class="stat-value" id="player-name">…</span><button type="button" class="player-reroll" id="player-reroll" aria-label="Give me a new anonymous name" title="New anonymous name">🎲</button></span>
+    <div class="stat player" data-t-title="playerTitle" title="An anonymous name made up by the game. It's saved only on this device, and you can change it any time.">
+      <span class="stat-label" data-t="player">Player</span>
+      <span class="player-row"><span class="stat-value" id="player-name">…</span><button type="button" class="player-reroll" id="player-reroll" aria-label="Give me a new anonymous name" data-t-aria="reroll" title="New anonymous name" data-t-title="rerollTitle">🎲</button></span>
     </div>
-    <div class="stat"><span class="stat-label">Found</span><span class="stat-value" id="score">0/0</span></div>
-    <div class="stat"><span class="stat-label">Time</span><span class="stat-value" id="timer">0:00</span></div>
-    <div class="stat"><span class="stat-label">Misses</span><span class="stat-value" id="misses">0</span></div>
+    <div class="stat"><span class="stat-label" data-t="found">Found</span><span class="stat-value" id="score">0/0</span></div>
+    <div class="stat"><span class="stat-label" data-t="time">Time</span><span class="stat-value" id="timer">0:00</span></div>
+    <div class="stat"><span class="stat-label" data-t="misses">Misses</span><span class="stat-value" id="misses">0</span></div>
   </div>
 </header>
 
@@ -361,44 +368,44 @@
     <div class="card prompt" id="prompt" aria-live="polite">
       <p class="prompt-kicker" id="prompt-kicker">__KICKER__</p>
       <p class="prompt-name" id="prompt-name">—</p>
-      <p class="prompt-hint" id="prompt-hint">Click its dot on the map. Scroll or pinch to zoom, drag to pan.</p>
+      <p class="prompt-hint" id="prompt-hint" data-t="clickHint">Click its dot on the map. Scroll or pinch to zoom, drag to pan.</p>
       <div class="progress" aria-hidden="true"><span class="p-ok" id="bar-ok"></span><span class="p-skip" id="bar-skip"></span></div>
     </div>
     <div class="actions">
-      <button type="button" id="hint-btn" title="First hint: narrows down where it is and zooms to the area. Second hint: shows the dot. Each hint adds 10 seconds.">Hint (+10s)</button>
-      <button type="button" id="skip-btn" title="Reveal the answer and move on">Show me</button>
+      <button type="button" id="hint-btn" data-t-title="hintTitle" title="First hint: narrows down where it is and zooms to the area. Second hint: shows the dot. Each hint adds 10 seconds.">Hint (+10s)</button>
+      <button type="button" id="skip-btn" data-t-title="showMeTitle" title="Reveal the answer and move on" data-t="showMe">Show me</button>
     </div>
 
     <div class="card setup">
-      <h2>Game</h2>
-      <p class="setup-sub" id="regions-label" hidden>Type</p>
+      <h2 data-t="game">Game</h2>
+      <p class="setup-sub" id="regions-label" data-t="type" hidden>Type</p>
       <div class="regions" id="regions" role="group" aria-label="Region"></div>
-      <p class="setup-sub" id="areas-label" hidden>Area</p>
+      <p class="setup-sub" id="areas-label" data-t="area" hidden>Area</p>
       <div class="regions" id="areas" role="group" aria-label="Area" hidden></div>
       <div class="setup-row">
-        <label for="count" id="count-label">How many</label>
+        <label for="count" id="count-label" data-t="howMany">How many</label>
         <select id="count">
-          <option value="10">10 per round</option>
-          <option value="20" selected>20 per round</option>
-          <option value="50">50 per round</option>
-          <option value="all">All of them</option>
+          <option value="10" data-t="per10">10 per round</option>
+          <option value="20" selected data-t="per20">20 per round</option>
+          <option value="50" data-t="per50">50 per round</option>
+          <option value="all" data-t="perAll">All of them</option>
         </select>
-        <button type="button" class="primary" id="new-btn">New game</button>
+        <button type="button" class="primary" id="new-btn" data-t="newGame">New game</button>
       </div>
     </div>
 
     <div class="card discovered" id="discovered" hidden>
-      <h2>Discovered</h2>
-      <p class="empty" id="disc-empty">Find a town to read what it's famous for. Tap any discovered town to read it again.</p>
+      <h2 data-t="discovered">Discovered</h2>
+      <p class="empty" id="disc-empty" data-t="discEmpty">Find a town to read what it's famous for. Tap any discovered town to read it again.</p>
       <ul id="disc-list"></ul>
     </div>
 
     <div class="card legend" id="legend">
-      <h2>Map key</h2>
+      <h2 data-t="mapKey">Map key</h2>
       <ul>
-        <li><i style="background:var(--l-main)"></i>Main line</li>
-        <li><i style="background:var(--l-regional)"></i>Regional</li>
-        <li><i style="background:repeating-linear-gradient(90deg,var(--l-local) 0 7px,transparent 7px 10px)"></i>Local / light rail</li>
+        <li><i style="background:var(--l-main)"></i><span data-t="lMain">Main line</span></li>
+        <li><i style="background:var(--l-regional)"></i><span data-t="lRegional">Regional</span></li>
+        <li><i style="background:repeating-linear-gradient(90deg,var(--l-local) 0 7px,transparent 7px 10px)"></i><span data-t="lLocal">Local / light rail</span></li>
         <li><i style="background:var(--l-stog)"></i>S-tog</li>
         <li><i style="background:var(--l-m1)"></i>Metro M1</li>
         <li><i style="background:var(--l-m2)"></i>Metro M2</li>
@@ -408,19 +415,19 @@
     </div>
   </section>
 
-  <section class="card map-card" id="map-card" tabindex="0" aria-label="Map of Denmark. Use plus and minus to zoom and arrow keys to pan.">
-    <svg id="map" role="img" aria-label="Map of Denmark"></svg>
+  <section class="card map-card" id="map-card" tabindex="0" aria-label="Map of Denmark. Use plus and minus to zoom and arrow keys to pan." data-t-aria="mapCardAria">
+    <svg id="map" role="img" aria-label="Map of Denmark" data-t-aria="mapAria"></svg>
     <div class="map-jump" id="map-jump"></div>
     <div class="map-tools">
-      <button type="button" id="zoom-in" aria-label="Zoom in">+</button>
-      <button type="button" id="zoom-out" aria-label="Zoom out">−</button>
-      <button type="button" id="zoom-fit" aria-label="Show whole game area">
+      <button type="button" id="zoom-in" aria-label="Zoom in" data-t-aria="zoomIn">+</button>
+      <button type="button" id="zoom-out" aria-label="Zoom out" data-t-aria="zoomOut">−</button>
+      <button type="button" id="zoom-fit" aria-label="Show whole game area" data-t-aria="zoomFit">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
       </button>
     </div>
-    <div class="map-help" id="map-help">Scroll / pinch to zoom · drag to pan</div>
+    <div class="map-help" id="map-help" data-t="mapHelp">Scroll / pinch to zoom · drag to pan</div>
     <div class="card fact" id="fact" hidden aria-live="polite">
-      <button type="button" class="fact-close" id="fact-close" aria-label="Close">×</button>
+      <button type="button" class="fact-close" id="fact-close" aria-label="Close" data-t-aria="close">×</button>
       <p class="fact-kicker" id="fact-kicker">Found it!</p>
       <h3 id="fact-name"></h3>
       <p class="fact-region" id="fact-region"></p>
@@ -431,10 +438,11 @@
 </main>
 
 <footer>
-  No login, no tracking: your anonymous player name, settings and best times are stored only on this device.<br>
-  __CREDITS__
-  Coastline © <a href="https://www.openstreetmap.org/copyright" style="color:inherit">OpenStreetMap</a> contributors (ODbL), via geo-maps.
-  __FOOTER_NOTE__
+  <a href="index.html" data-t="allGames">← All map games</a><br>
+  <span data-t="privacy">No login, no tracking: your anonymous player name, settings and best times are stored only on this device.</span><br>
+  <span id="f-credits">__CREDITS__</span>
+  <span data-th="coastline">Coastline © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors (ODbL), via geo-maps.</span>
+  <span id="f-note">__FOOTER_NOTE__</span>
 </footer>
 
 <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="victory-title">
@@ -445,18 +453,18 @@
       </svg>
     </div>
     <h2 id="victory-title">Tillykke!</h2>
-    <p id="victory-sub">Round complete.</p>
+    <p id="victory-sub" data-t="roundComplete">Round complete.</p>
     <div class="stars" id="stars"></div>
     <div class="result-grid">
-      <div><b id="r-time">0:00</b><span>Time</span></div>
-      <div><b id="r-found">0</b><span>Found</span></div>
-      <div><b id="r-acc">100%</b><span>Accuracy</span></div>
-      <div><b id="r-hints">0</b><span>Hints</span></div>
+      <div><b id="r-time">0:00</b><span data-t="rTime">Time</span></div>
+      <div><b id="r-found">0</b><span data-t="rFound">Found</span></div>
+      <div><b id="r-acc">100%</b><span data-t="rAcc">Accuracy</span></div>
+      <div><b id="r-hints">0</b><span data-t="rHints">Hints</span></div>
     </div>
     <p class="best" id="r-best"></p>
     <div class="victory-actions">
-      <button type="button" id="review-btn">View map</button>
-      <button type="button" class="primary" id="again-btn">Play again</button>
+      <button type="button" id="review-btn" data-t="viewMap">View map</button>
+      <button type="button" class="primary" id="again-btn" data-t="playAgain">Play again</button>
     </div>
   </div>
 </div>
@@ -495,21 +503,121 @@
      ====================================================================== */
   const REGIONS = DATA.regions.map(([id, name]) => ({ id, name }));
   const LINE_ORDER = ["local", "regional", "main", "stog", "m4", "m3", "m2", "m1"];
-  const LINE_KIND = { main: "main line", regional: "regional line", local: "local line", stog: "S-tog", m1: "Metro", m2: "Metro", m3: "Metro", m4: "Metro" };
+  /* ======================================================================
+     Language (English / Danish)
+     ====================================================================== */
+  const LANG_KEY = "dk-map-games:lang";
+  const DA = DATA.i18n && DATA.i18n.da;
+  const STR = {
+    en: {
+      player: "Player", playerTitle: "An anonymous name made up by the game. It's saved only on this device, and you can change it any time.",
+      reroll: "Give me a new anonymous name", rerollTitle: "New anonymous name",
+      found: "Found", time: "Time", misses: "Misses",
+      clickHint: "Click its dot on the map. Scroll or pinch to zoom, drag to pan.",
+      hint: "Hint (+10s)", showDot: "Show dot (+10s)",
+      hintTitle: "First hint: narrows down where it is and zooms to the area. Second hint: shows the dot. Each hint adds 10 seconds.",
+      showMe: "Show me", showMeTitle: "Reveal the answer and move on",
+      game: "Game", type: "Type", area: "Area", howMany: "How many",
+      per10: "10 per round", per20: "20 per round", per50: "50 per round", perAll: "All of them", newGame: "New game",
+      discovered: "Discovered", discEmpty: "Find a town to read what it's famous for. Tap any discovered town to read it again.",
+      mapKey: "Map key", lMain: "Main line", lRegional: "Regional", lLocal: "Local / light rail",
+      mapCardAria: "Map of Denmark. Use plus and minus to zoom and arrow keys to pan.", mapAria: "Map of Denmark",
+      zoomIn: "Zoom in", zoomOut: "Zoom out", zoomFit: "Show whole game area",
+      mapHelp: "Scroll / pinch to zoom · drag to pan", close: "Close",
+      allGames: "← All map games",
+      privacy: "No login, no tracking: your anonymous player name, settings and best times are stored only on this device.",
+      coastline: 'Coastline © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors (ODbL), via geo-maps.',
+      roundComplete: "Round complete.", rTime: "Time", rFound: "Found", rAcc: "Accuracy", rHints: "Hints",
+      viewMap: "View map", playAgain: "Play again",
+      factFound: "Found it!", factRevealed: "Here it is", factAgain: "Discovered",
+      findN: "Find {one} {n} of {total}", foundOf: "{found} of {total} found", roundOver: "Round complete",
+      startNew: "Start a new game, or pick another region.",
+      already: "That's <b>{name}</b>, already on your map.",
+      miss: "That's <b>{name}</b>. {target} is {dist} {dir} of there.",
+      servedBy: "Served by: <b>{lines}</b>.", itsIn: "It's in <b>{where}</b>.",
+      pulse: "Look for the pulsing dot.", lastOne: "The last one was <b>{name}</b>, now marked in orange.",
+      inArea: "{region} in {area}", shownToYou: ", {n} shown to you.",
+      bestSkipped: 'Personal best for this mode: {best} (rounds with "Show me" don\'t count)',
+      noBestSkipped: 'Find them all without "Show me" to set a best time.',
+      firstBest: "First clean run in this mode. Can you beat it?", newBest: "New personal best! Previous: {best}",
+      best: "Personal best for this mode: {best}",
+      inhabitants: "≈ {n} inhabitants", popUnknown: "population not listed",
+      dirs: ["north", "northeast", "east", "southeast", "south", "southwest", "west", "northwest"],
+      kinds: { main: "main line", regional: "regional line", local: "local line" }
+    },
+    da: {
+      player: "Spiller", playerTitle: "Et anonymt navn, som spillet har fundet på. Det gemmes kun på denne enhed, og du kan skifte det når som helst.",
+      reroll: "Giv mig et nyt anonymt navn", rerollTitle: "Nyt anonymt navn",
+      found: "Fundet", time: "Tid", misses: "Forkerte",
+      clickHint: "Klik på prikken på kortet. Rul eller knib for at zoome, træk for at flytte kortet.",
+      hint: "Hint (+10 s)", showDot: "Vis prikken (+10 s)",
+      hintTitle: "Første hint: viser hvor i landet det er og zoomer ind. Andet hint: viser prikken. Hvert hint lægger 10 sekunder til.",
+      showMe: "Vis mig", showMeTitle: "Vis svaret og gå videre",
+      game: "Spil", type: "Type", area: "Område", howMany: "Antal",
+      per10: "10 pr. runde", per20: "20 pr. runde", per50: "50 pr. runde", perAll: "Alle", newGame: "Nyt spil",
+      discovered: "Opdaget", discEmpty: "Find en by for at læse, hvad den er kendt for. Tryk på en opdaget by for at læse om den igen.",
+      mapKey: "Signaturforklaring", lMain: "Hovedstrækning", lRegional: "Regionaltog", lLocal: "Lokalbane / letbane",
+      mapCardAria: "Kort over Danmark. Brug plus og minus til at zoome og piletasterne til at flytte kortet.", mapAria: "Kort over Danmark",
+      zoomIn: "Zoom ind", zoomOut: "Zoom ud", zoomFit: "Vis hele spilleområdet",
+      mapHelp: "Rul / knib for at zoome · træk for at flytte", close: "Luk",
+      allGames: "← Alle kortspil",
+      privacy: "Intet login, ingen sporing: dit anonyme spillernavn, dine indstillinger og bedste tider gemmes kun på denne enhed.",
+      coastline: 'Kystlinje © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>-bidragydere (ODbL) via geo-maps.',
+      roundComplete: "Runden er slut.", rTime: "Tid", rFound: "Fundet", rAcc: "Træfsikkerhed", rHints: "Hints",
+      viewMap: "Se kortet", playAgain: "Spil igen",
+      factFound: "Fundet!", factRevealed: "Her er den", factAgain: "Opdaget",
+      findN: "Find {one} {n} af {total}", foundOf: "{found} af {total} fundet", roundOver: "Runden er slut",
+      startNew: "Start et nyt spil, eller vælg et andet område.",
+      already: "Det er <b>{name}</b>, som allerede er på dit kort.",
+      miss: "Det er <b>{name}</b>. {target} ligger {dist} {dir} for den.",
+      servedBy: "Betjenes af: <b>{lines}</b>.", itsIn: "Det ligger i <b>{where}</b>.",
+      pulse: "Kig efter den blinkende prik.", lastOne: "Den forrige var <b>{name}</b>, nu markeret med orange.",
+      inArea: "{region} i {area}", shownToYou: ", {n} vist for dig.",
+      bestSkipped: 'Din rekord i denne spilform: {best} (runder med "Vis mig" tæller ikke)',
+      noBestSkipped: 'Find dem alle uden "Vis mig" for at sætte en rekord.',
+      firstBest: "Første runde uden hjælp i denne spilform. Kan du slå den?", newBest: "Ny personlig rekord! Den forrige: {best}",
+      best: "Din rekord i denne spilform: {best}",
+      inhabitants: "≈ {n} indbyggere", popUnknown: "indbyggertal ikke oplyst",
+      dirs: ["nord", "nordøst", "øst", "sydøst", "syd", "sydvest", "vest", "nordvest"],
+      kinds: { main: "hovedstrækning", regional: "regionalbane", local: "lokalbane" }
+    }
+  };
+  let lang = "";
+  try { lang = localStorage.getItem(LANG_KEY) || ""; } catch (e) { /* storage unavailable */ }
+  if (lang !== "da" && lang !== "en") lang = (navigator.language || "").toLowerCase().startsWith("da") ? "da" : "en";
+  if (!DA) lang = "en";
+  const isDa = () => lang === "da" && !!DA;
+  // Look up a text; {name} placeholders are filled from vars (game data only, never user input).
+  function tr(key, vars) {
+    let text = STR[lang][key] ?? STR.en[key];
+    if (vars) text = text.replace(/\{(\w+)\}/g, (m, k) => vars[k]);
+    return text;
+  }
+  const EN_TEXT = {
+    title: document.title, h1: document.getElementById("game-title").textContent,
+    tagline: document.getElementById("tagline").textContent,
+    credits: document.getElementById("f-credits").innerHTML, note: document.getElementById("f-note").innerHTML
+  };
 
   const stations = DATA.stations.map((s, i) => ({
     i, name: s[0], x: s[1], y: s[2], region: s[3], lat: s[4], lon: s[5],
     info: s[6] || null, lines: [], el: null, label: null, state: "", active: false
   }));
-  const WORDS = Object.assign({ one: "station", many: "stops", kicker: "Find this station" }, DATA.meta.words);
+  const WORDS_EN = Object.assign({ one: "station", many: "stops", kicker: "Find this station" }, DATA.meta.words);
+  const words = () => (isDa() && DA.words) || WORDS_EN;
+  const countText = (n) => `${n} ${n === 1 ? words().one : words().many}`;
   const hasLines = DATA.lines.length > 0;
-  const CATS = DATA.meta.categories || null;
+  const CATS_EN = DATA.meta.categories || null;
+  const cats = () => (isDa() && DA.categories) || CATS_EN;
+  const adminName = (id) => ((isDa() && DA.admin) || DATA.meta.admin)[id];
   const CAT_SIZE = { city: 1.45, major: 1.15, minor: 0.9 };
   const legendBox = document.getElementById("legend");
-  legendBox.hidden = !hasLines && !CATS;
-  if (CATS) {
-    legendBox.querySelector("ul").innerHTML = Object.keys(CATS).map((c) =>
-      `<li class="wide"><i class="dot" style="background:var(--c-${c})"></i>${CATS[c][0]} <small>${CATS[c][1]}</small></li>`).join("");
+  legendBox.hidden = !hasLines && !CATS_EN;
+  function renderLegend() {
+    if (!CATS_EN) return;
+    const c = cats();
+    legendBox.querySelector("ul").innerHTML = Object.keys(c).map((k) =>
+      `<li class="wide"><i class="dot" style="background:var(--c-${k})"></i>${c[k][0]} <small>${c[k][1]}</small></li>`).join("");
   }
   document.getElementById("discovered").hidden = !stations.some((s) => s.info);
   DATA.lines.forEach((l) => {
@@ -738,6 +846,11 @@
     if (!list.length) return;
     let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
     list.forEach((s) => { x0 = Math.min(x0, s.x); y0 = Math.min(y0, s.y); x1 = Math.max(x1, s.x); y1 = Math.max(y1, s.y); });
+    // A round with only a place or two still shows its surroundings.
+    const minSpan = DATA.meta.revealKm * 2 * unitsPerKm;
+    const grow = (a, b) => { const m = (a + b) / 2, h = Math.max(b - a, minSpan) / 2; return [m - h, m + h]; };
+    [x0, x1] = grow(x0, x1);
+    [y0, y1] = grow(y0, y1);
     return boxFor(x0, y0, x1, y1, pad == null ? Math.max(x1 - x0, y1 - y0) * 0.06 + 4 : pad);
   }
 
@@ -911,9 +1024,10 @@
 
   // Quick jumps to dense areas.
   const jumpBox = document.getElementById("map-jump");
-  DATA.jumps.forEach(([name, la0, lo0, la1, lo1]) => {
+  DATA.jumps.forEach(([name, la0, lo0, la1, lo1], i) => {
     const b = document.createElement("button");
     b.type = "button";
+    b.dataset.jump = i;
     b.textContent = name;
     b.addEventListener("click", () => {
       const [x0, y1] = project(lo0, la0), [x1, y0] = project(lo1, la1);
@@ -966,7 +1080,7 @@
     const b = document.createElement("button");
     b.type = "button";
     b.dataset[kind] = item.id;
-    b.innerHTML = `${item.name}<span></span>`;
+    b.append(document.createTextNode(item.name), document.createElement("span"));
     b.addEventListener("click", () => { game[kind] = item.id; savePrefs(); newGame(); });
     box.appendChild(b);
   }
@@ -979,13 +1093,15 @@
   function renderFilters() {
     [...ui.regions.children].forEach((b) => {
       const n = stations.filter((s) => inRegion(s, b.dataset.region) && inArea(s, game.area)).length;
-      b.lastChild.textContent = `${n} ${WORDS.many}`;
+      b.firstChild.textContent = regionName(b.dataset.region);
+      b.lastChild.textContent = countText(n);
       b.disabled = n === 0;
       b.setAttribute("aria-pressed", String(b.dataset.region === game.region));
     });
     [...ui_areas.children].forEach((b) => {
       const n = stations.filter((s) => inRegion(s, game.region) && inArea(s, b.dataset.area)).length;
-      b.lastChild.textContent = `${n} ${WORDS.many}`;
+      b.firstChild.textContent = areaName(b.dataset.area);
+      b.lastChild.textContent = countText(n);
       b.disabled = n === 0;
       b.setAttribute("aria-pressed", String(b.dataset.area === game.area));
     });
@@ -1022,23 +1138,24 @@
   function direction(from, to) {
     const dx = (to.lon - from.lon) * Math.cos(from.lat * Math.PI / 180), dy = to.lat - from.lat;
     const ang = (Math.atan2(dx, dy) * 180 / Math.PI + 360) % 360;
-    return ["north", "northeast", "east", "southeast", "south", "southwest", "west", "northwest"][Math.round(ang / 45) % 8];
+    return tr("dirs")[Math.round(ang / 45) % 8];
   }
   function servedBy(s) {
     const names = [];
     s.lines.forEach((l) => {
       const metro = /^m\d$/.test(l.t);
       const label = metro ? l.n.split(" ")[0] : l.n.replace(/ \(.*\)$/, "");
-      const txt = metro ? `Metro ${label}` : l.t === "stog" ? "S-tog" : `${label} (${LINE_KIND[l.t]})`;
+      const txt = metro ? `Metro ${label}` : l.t === "stog" ? "S-tog" : `${label} (${tr("kinds")[l.t]})`;
       if (!names.includes(txt)) names.push(txt);
     });
     return names.join(", ");
   }
 
-  const regionName = (id) => (REGIONS.find((r) => r.id === id) || { name: id }).name;
+  const regionName = (id) => (isDa() && DA.regions && DA.regions[id]) || (REGIONS.find((r) => r.id === id) || { name: id }).name;
+  const areaName = (id) => (isDa() && DA.areas && DA.areas[id]) || (AREAS.find((a) => a.id === id) || { name: id }).name;
   function clue(s) {
-    if (!s.info) return `Served by: <b>${servedBy(s)}</b>.`;
-    return `It's in <b>${s.info.admin ? DATA.meta.admin[s.info.admin] : regionName(s.region)}</b>.`;
+    if (!s.info) return tr("servedBy", { lines: servedBy(s) });
+    return tr("itsIn", { where: s.info.admin ? adminName(s.info.admin) : regionName(s.region) });
   }
 
   /* ---------- Fact card & discovered list ---------- */
@@ -1047,14 +1164,16 @@
     tags: $("fact-tags"), text: $("fact-text"), close: $("fact-close"), help: $("map-help")
   };
   const discList = $("disc-list"), discEmpty = $("disc-empty");
+  let factShown = null;
   function showFact(s, why) {
-    fact.kicker.textContent = why === "found" ? "Found it!" : why === "revealed" ? "Here it is" : "Discovered";
+    factShown = [s, why];
+    fact.kicker.textContent = tr(why === "found" ? "factFound" : why === "revealed" ? "factRevealed" : "factAgain");
     fact.box.classList.toggle("revealed", why === "revealed");
     fact.name.textContent = s.name;
     const bits = [];
-    if (s.info.cat) bits.push(CATS[s.info.cat][0]);
-    bits.push(s.info.admin ? DATA.meta.admin[s.info.admin] : regionName(s.region));
-    if (s.info.cat) bits.push(s.info.pop ? `≈ ${s.info.pop.toLocaleString("en-US")} inhabitants` : "population not listed");
+    if (s.info.cat) bits.push(cats()[s.info.cat][0]);
+    bits.push(s.info.admin ? adminName(s.info.admin) : regionName(s.region));
+    if (s.info.cat) bits.push(s.info.pop ? tr("inhabitants", { n: s.info.pop.toLocaleString(isDa() ? "da-DK" : "en-US") }) : tr("popUnknown"));
     fact.region.textContent = bits.join(" · ");
     fact.tags.innerHTML = "";
     (s.info.tags || []).forEach((t) => { const li = document.createElement("li"); li.textContent = t; fact.tags.appendChild(li); });
@@ -1134,12 +1253,12 @@
     game.current = game.queue.shift() || null;
     game.hintLevel = 0;
     pulse.classList.remove("on");
-    ui.hintBtn.textContent = "Hint (+10s)";
+    ui.hintBtn.textContent = tr("hint");
     if (!game.current) return finish();
     ui.hintBtn.disabled = false;
-    ui.kicker.textContent = `Find ${WORDS.one} ${game.found + game.skipped + 1} of ${game.total}`;
+    ui.kicker.textContent = tr("findN", { one: words().one, n: game.found + game.skipped + 1, total: game.total });
     ui.name.textContent = game.current.name;
-    ui.hint.textContent = "Click its dot on the map. Scroll or pinch to zoom, drag to pan.";
+    ui.hint.textContent = tr("clickHint");
     ui.prompt.classList.remove("enter");
     void ui.prompt.offsetWidth;
     ui.prompt.classList.add("enter");
@@ -1149,7 +1268,7 @@
   function guess(s) {
     if (s.state === "found" || s.state === "skipped") {
       if (s.info) showFact(s, "again");
-      else if (!game.done) ui.hint.innerHTML = `That's <b>${s.name}</b>, already on your map.`;
+      else if (!game.done) ui.hint.innerHTML = tr("already", { name: s.name });
       return;
     }
     if (game.done || !game.current) return;
@@ -1175,8 +1294,9 @@
       if (s.label && s.label.kind === "temp") { removeLabel(s); layoutLabels(); }
     }, 1800));
     const km = distanceKm(s, target);
-    const dist = km < 1 ? `${Math.round(km * 1000)} m` : `${km < 10 ? km.toFixed(1) : Math.round(km)} km`;
-    ui.hint.innerHTML = `That's <b>${s.name}</b>. ${target.name} is ${dist} ${direction(s, target)} of there.`;
+    const dist = km < 1 ? `${Math.round(km * 1000)} m`
+      : `${km < 10 ? km.toFixed(1).replace(".", isDa() ? "," : ".") : Math.round(km)} km`;
+    ui.hint.innerHTML = tr("miss", { name: s.name, target: target.name, dist: dist, dir: direction(s, target) });
     ui.prompt.classList.remove("shake");
     void ui.prompt.offsetWidth;
     ui.prompt.classList.add("shake");
@@ -1196,14 +1316,14 @@
       const span = (game.region === "kbh" ? DATA.meta.hintKm.kbh : DATA.meta.hintKm.other) * unitsPerKm;
       const ox = (Math.random() - .5) * span * .5, oy = (Math.random() - .5) * span * .5;
       flyTo(boxFor(t.x + ox - span / 2, t.y + oy - span / 2, t.x + ox + span / 2, t.y + oy + span / 2, 0));
-      ui.hintBtn.textContent = "Show dot (+10s)";
+      ui.hintBtn.textContent = tr("showDot");
     } else {
       pulse.setAttribute("cx", t.x);
       pulse.setAttribute("cy", t.y);
       pulse.classList.add("on");
       const near = DATA.meta.revealKm * 0.66 * unitsPerKm;
       if (view.w > near * 6) flyTo(boxFor(t.x - near, t.y - near, t.x + near, t.y + near, 0));
-      ui.hint.innerHTML = `Look for the pulsing dot. ${clue(t)}`;
+      ui.hint.innerHTML = `${tr("pulse")} ${clue(t)}`;
       ui.hintBtn.disabled = true;
     }
   }
@@ -1221,7 +1341,7 @@
     ui.hintBtn.disabled = false;
     nextStation();
     if (!game.done) {
-      ui.hint.innerHTML = `The last one was <b>${t.name}</b>, now marked in orange.`;
+      ui.hint.innerHTML = tr("lastOne", { name: t.name });
     }
   }
 
@@ -1234,9 +1354,7 @@
     renderProgress();
     setHover(null);
     ui.hintBtn.disabled = ui.skipBtn.disabled = true;
-    ui.kicker.textContent = "Round complete";
-    ui.name.textContent = `${game.found} of ${game.total} found`;
-    ui.hint.textContent = "Start a new game, or pick another region.";
+    renderDoneText();
 
     const ms = elapsed();
     const acc = game.found + game.misses ? Math.round(game.found / (game.found + game.misses) * 100) : 0;
@@ -1249,20 +1367,20 @@
     ui.rFound.textContent = `${game.found}/${game.total}`;
     ui.rAcc.textContent = `${acc}%`;
     ui.rHints.textContent = game.hints;
-    const area = AREAS.find((a) => a.id === game.area);
-    const roundRegion = regionName(game.region) + (area && area.id !== "all" ? ` in ${area.name}` : "");
-    ui.vSub.textContent = `${roundRegion}: ${game.total} ${WORDS.many}` + (game.skipped ? `, ${game.skipped} shown to you.` : ".");
+    const roundRegion = AREAS.length && game.area !== "all"
+      ? tr("inArea", { region: regionName(game.region), area: areaName(game.area) }) : regionName(game.region);
+    ui.vSub.textContent = `${roundRegion}: ${countText(game.total)}` + (game.skipped ? tr("shownToYou", { n: game.skipped }) : ".");
 
     const key = `${DATA.meta.key}:best:${game.region}:` + (AREAS.length ? `${game.area}:` : "") + game.count;
     let best = null;
     try { best = Number(localStorage.getItem(key)) || null; } catch (e) { /* ignore */ }
     if (game.skipped) {
-      ui.rBest.textContent = best ? `Personal best for this mode: ${fmt(best)} (rounds with "Show me" don't count)` : `Find them all without "Show me" to set a best time.`;
+      ui.rBest.textContent = best ? tr("bestSkipped", { best: fmt(best) }) : tr("noBestSkipped");
     } else if (best === null || ms < best) {
-      ui.rBest.textContent = best === null ? "First clean run in this mode. Can you beat it?" : `New personal best! Previous: ${fmt(best)}`;
+      ui.rBest.textContent = best === null ? tr("firstBest") : tr("newBest", { best: fmt(best) });
       try { localStorage.setItem(key, String(Math.round(ms))); } catch (e) { /* ignore */ }
     } else {
-      ui.rBest.textContent = `Personal best for this mode: ${fmt(best)}`;
+      ui.rBest.textContent = tr("best", { best: fmt(best) });
     }
 
     setTimeout(() => {
@@ -1315,8 +1433,47 @@
     view.y = cy - view.h / 2;
     applyView();
   }).observe(svg);
+  function renderDoneText() {
+    ui.kicker.textContent = tr("roundOver");
+    ui.name.textContent = tr("foundOf", { found: game.found, total: game.total });
+    ui.hint.textContent = tr("startNew");
+  }
+  function applyLang() {
+    document.documentElement.lang = lang;
+    document.querySelectorAll("[data-t]").forEach((n) => { n.textContent = tr(n.dataset.t); });
+    document.querySelectorAll("[data-th]").forEach((n) => { n.innerHTML = tr(n.dataset.th); });
+    document.querySelectorAll("[data-t-title]").forEach((n) => { n.title = tr(n.dataset.tTitle); });
+    document.querySelectorAll("[data-t-aria]").forEach((n) => { n.setAttribute("aria-label", tr(n.dataset.tAria)); });
+    const da = isDa();
+    document.title = da ? DA.title : EN_TEXT.title;
+    $("game-title").textContent = da ? DA.title : EN_TEXT.h1;
+    $("tagline").textContent = da ? DA.tagline : EN_TEXT.tagline;
+    $("f-credits").innerHTML = da ? DA.credits : EN_TEXT.credits;
+    $("f-note").innerHTML = da ? DA.footer : EN_TEXT.note;
+    document.querySelectorAll(".lang-switch button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
+    document.querySelectorAll("#map-jump button").forEach((b) => {
+      b.textContent = (da && DA.jumps && DA.jumps[b.dataset.jump]) || DATA.jumps[b.dataset.jump][0];
+    });
+    renderLegend();
+    renderFilters();
+    // Texts that depend on where the round is.
+    if (game.done) renderDoneText();
+    else if (game.current) {
+      ui.kicker.textContent = tr("findN", { one: words().one, n: game.found + game.skipped + 1, total: game.total });
+      ui.hint.textContent = tr("clickHint");
+      ui.hintBtn.textContent = tr(game.hintLevel >= 1 ? "showDot" : "hint");
+    }
+    if (factShown && !fact.box.hidden) showFact(factShown[0], factShown[1]);
+  }
+  document.querySelectorAll(".lang-switch button").forEach((b) => b.addEventListener("click", () => {
+    lang = b.dataset.lang;
+    try { localStorage.setItem(LANG_KEY, lang); } catch (e) { /* storage unavailable */ }
+    applyLang();
+  }));
+
   restorePrefs();
   newGame();
+  applyLang();
 })();
 </script>
 </body>

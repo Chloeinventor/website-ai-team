@@ -271,6 +271,7 @@ data = {
     "lines": lines_out,
     "inset": inset_out,
     "areas": V.get("areas"),
+    "i18n": {"da": V.get("da")},
 }
 RAIL_CREDITS = ('Station positions: <a href="https://github.com/trainline-eu/stations">Trainline stations dataset</a>'
                 ' (ODbL), plus hand-placed Metro and local-line stops.')

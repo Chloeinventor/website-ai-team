@@ -88,6 +88,9 @@
   .stat.player .stat-value { font-size: 15px; white-space: nowrap; }
   .player-row { display: flex; align-items: center; gap: 6px; }
   .player-reroll { padding: 2px 6px; font-size: 15px; line-height: 1.2; border-radius: 8px; }
+  .lang-switch { display: flex; gap: 4px; margin-top: 6px; }
+  .lang-switch button { padding: 3px 10px; font-size: 12px; border-radius: 99px; }
+  .lang-switch button[aria-pressed="true"] { background: var(--ink); color: var(--panel); border-color: var(--ink); }
   .stat {
     display: flex; flex-direction: column; align-items: flex-start;
     min-width: 84px; padding: 6px 14px;
@@ -265,45 +268,49 @@
   <div class="brand">
     <div class="flag" aria-hidden="true"></div>
     <div>
-      <h1>Danish City Finder</h1>
-      <p class="tagline">How well do you know the map of Denmark?</p>
+      <h1 data-t="title">Danish City Finder</h1>
+      <p class="tagline" data-t="tagline">How well do you know the map of Denmark?</p>
+      <div class="lang-switch" role="group" aria-label="Language / Sprog">
+        <button type="button" data-lang="da" lang="da">Dansk</button>
+        <button type="button" data-lang="en" lang="en">English</button>
+      </div>
     </div>
   </div>
   <div class="stats">
-    <div class="stat player" title="An anonymous name made up by the game. It's saved only on this device, and you can change it any time.">
-      <span class="stat-label">Player</span>
-      <span class="player-row"><span class="stat-value" id="player-name">…</span><button type="button" class="player-reroll" id="player-reroll" aria-label="Give me a new anonymous name" title="New anonymous name">🎲</button></span>
+    <div class="stat player" data-t-title="playerTitle" title="An anonymous name made up by the game. It's saved only on this device, and you can change it any time.">
+      <span class="stat-label" data-t="player">Player</span>
+      <span class="player-row"><span class="stat-value" id="player-name">…</span><button type="button" class="player-reroll" id="player-reroll" aria-label="Give me a new anonymous name" data-t-aria="reroll" title="New anonymous name" data-t-title="rerollTitle">🎲</button></span>
     </div>
-    <div class="stat"><span class="stat-label">Found</span><span class="stat-value" id="score">0/10</span></div>
-    <div class="stat"><span class="stat-label">Time</span><span class="stat-value" id="timer">0:00</span></div>
-    <div class="stat"><span class="stat-label">Misses</span><span class="stat-value" id="misses">0</span></div>
+    <div class="stat"><span class="stat-label" data-t="found">Found</span><span class="stat-value" id="score">0/10</span></div>
+    <div class="stat"><span class="stat-label" data-t="time">Time</span><span class="stat-value" id="timer">0:00</span></div>
+    <div class="stat"><span class="stat-label" data-t="misses">Misses</span><span class="stat-value" id="misses">0</span></div>
   </div>
 </header>
 
 <main>
   <section class="side">
     <div class="card prompt" id="prompt" aria-live="polite">
-      <p class="prompt-kicker">Find this city</p>
+      <p class="prompt-kicker" data-t="kicker">Find this city</p>
       <p class="prompt-city" id="prompt-city">—</p>
       <p class="prompt-hint" id="prompt-hint">Click the matching dot on the map.</p>
       <div class="progress" aria-hidden="true"><span id="progress-bar"></span></div>
     </div>
     <div class="actions">
-      <button type="button" id="hint-btn" title="Highlight the correct dot (+10 s)">Hint (+10s)</button>
-      <button type="button" id="restart-btn">Restart</button>
+      <button type="button" id="hint-btn" data-t-title="hintTitle" title="Highlight the correct dot (+10 s)" data-t="hint">Hint (+10s)</button>
+      <button type="button" id="restart-btn" data-t="restart">Restart</button>
     </div>
     <div class="card found">
-      <h2>Cities found</h2>
+      <h2 data-t="citiesFound">Cities found</h2>
       <ul id="found-list"><li class="empty">None yet. Good luck!</li></ul>
     </div>
   </section>
 
   <section class="card map-wrap">
-    <svg id="map" role="group" aria-label="Map of Denmark with clickable city locations"></svg>
+    <svg id="map" role="group" aria-label="Map of Denmark with clickable city locations" data-t-aria="mapAria"></svg>
   </section>
 </main>
 
-<footer>No login, no tracking: your anonymous player name, settings and best times are stored only on this device.<br>Tip: use Tab and Enter to pick dots with the keyboard. Map outlines are simplified.<br>Ready for more? Try <a href="denmark-town-explorer.html" style="color:inherit">Denmark Town Explorer</a>, with 72 towns and what they're famous for, <a href="denmark-map-master.html" style="color:inherit">Denmark Map Master</a>, with every town in Denmark, or <a href="danish-rail-finder.html" style="color:inherit">Danish Rail Finder</a>, with every train and metro stop in Denmark.</footer>
+<footer><a href="index.html" style="color:inherit" data-t="allGames">← All map games</a><br><span data-th="footer">No login, no tracking: your anonymous player name, settings and best times are stored only on this device.<br>Tip: use Tab and Enter to pick dots with the keyboard. Map outlines are simplified.<br>Ready for more? Try <a href="denmark-town-explorer.html" style="color:inherit">Denmark Town Explorer</a>, with 72 towns and what they're famous for, <a href="denmark-map-master.html" style="color:inherit">Denmark Map Master</a>, with every town in Denmark, or <a href="danish-rail-finder.html" style="color:inherit">Danish Rail Finder</a>, with every train and metro stop in Denmark.</span></footer>
 
 <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="victory-title">
   <div class="card victory">
@@ -314,15 +321,15 @@
       </svg>
     </div>
     <h2 id="victory-title">Tillykke!</h2>
-    <p>You placed every city on the map.</p>
+    <p data-t="victorySub">You placed every city on the map.</p>
     <div class="stars" id="stars" aria-label=""></div>
     <div class="result-grid">
-      <div><b id="r-time">0:00</b><span>Time</span></div>
-      <div><b id="r-acc">100%</b><span>Accuracy</span></div>
-      <div><b id="r-hints">0</b><span>Hints</span></div>
+      <div><b id="r-time">0:00</b><span data-t="rTime">Time</span></div>
+      <div><b id="r-acc">100%</b><span data-t="rAcc">Accuracy</span></div>
+      <div><b id="r-hints">0</b><span data-t="rHints">Hints</span></div>
     </div>
     <p class="best" id="r-best"></p>
-    <button type="button" class="primary" id="play-again">Play again</button>
+    <button type="button" class="primary" id="play-again" data-t="playAgain">Play again</button>
   </div>
 </div>
 <div class="confetti" id="confetti" aria-hidden="true"></div>
@@ -534,6 +541,53 @@
     rTime: $("r-time"), rAcc: $("r-acc"), rHints: $("r-hints"), rBest: $("r-best"), stars: $("stars")
   };
   const BEST_KEY = "danish-city-finder:best";
+  /* ---------- Language (English / Danish) ---------- */
+  const LANG_KEY = "dk-map-games:lang";
+  const STR = {
+    en: {
+      title: "Danish City Finder", tagline: "How well do you know the map of Denmark?",
+      player: "Player", playerTitle: "An anonymous name made up by the game. It's saved only on this device, and you can change it any time.",
+      reroll: "Give me a new anonymous name", rerollTitle: "New anonymous name",
+      found: "Found", time: "Time", misses: "Misses", kicker: "Find this city",
+      hint: "Hint (+10s)", hintTitle: "Highlight the correct dot (+10 s)", restart: "Restart",
+      citiesFound: "Cities found", noneYet: "None yet. Good luck!", mapAria: "Map of Denmark with clickable city locations",
+      allGames: "← All map games",
+      footer: 'No login, no tracking: your anonymous player name, settings and best times are stored only on this device.<br>Tip: use Tab and Enter to pick dots with the keyboard. Map outlines are simplified.<br>Ready for more? Try <a href="denmark-town-explorer.html" style="color:inherit">Denmark Town Explorer</a>, with 72 towns and what they\'re famous for, <a href="denmark-map-master.html" style="color:inherit">Denmark Map Master</a>, with every town in Denmark, or <a href="danish-rail-finder.html" style="color:inherit">Danish Rail Finder</a>, with every train and metro stop in Denmark.',
+      victorySub: "You placed every city on the map.", rTime: "Time", rAcc: "Accuracy", rHints: "Hints", playAgain: "Play again",
+      clickHint: "Click the matching dot on the map.", danishName: "Danish: {local}. Click its dot on the map.",
+      wrong: "Not quite: that's not {name}. Try again!", pulse: "Look for the pulsing dot. (+10 s)",
+      allFound: "All found!", everyCity: "Every city is on the map.",
+      firstBest: "First completed run. Can you beat it?", newBest: "New personal best! Previous: {best}", best: "Personal best: {best}",
+      stars: "{n} of 3 stars", locFound: "{name} (found)", location: "Map location {n}"
+    },
+    da: {
+      title: "Find byen", tagline: "Hvor godt kender du Danmarkskortet?",
+      player: "Spiller", playerTitle: "Et anonymt navn, som spillet har fundet på. Det gemmes kun på denne enhed, og du kan skifte det når som helst.",
+      reroll: "Giv mig et nyt anonymt navn", rerollTitle: "Nyt anonymt navn",
+      found: "Fundet", time: "Tid", misses: "Forkerte", kicker: "Find denne by",
+      hint: "Hint (+10 s)", hintTitle: "Fremhæv den rigtige prik (+10 s)", restart: "Start forfra",
+      citiesFound: "Fundne byer", noneYet: "Ingen endnu. Held og lykke!", mapAria: "Kort over Danmark med byer, du kan klikke på",
+      allGames: "← Alle kortspil",
+      footer: 'Intet login, ingen sporing: dit anonyme spillernavn, dine indstillinger og bedste tider gemmes kun på denne enhed.<br>Tip: brug Tab og Enter til at vælge prikker med tastaturet. Kortets kystlinjer er forenklede.<br>Klar til mere? Prøv <a href="denmark-town-explorer.html" style="color:inherit">Byopdageren</a> med 72 byer og hvad de er kendt for, <a href="denmark-map-master.html" style="color:inherit">Kortmester Danmark</a> med alle byer i Danmark, eller <a href="danish-rail-finder.html" style="color:inherit">Danmarks togstationer</a> med alle tog- og metrostationer.',
+      victorySub: "Du har sat alle byerne på kortet.", rTime: "Tid", rAcc: "Træfsikkerhed", rHints: "Hints", playAgain: "Spil igen",
+      clickHint: "Klik på den rigtige prik på kortet.", danishName: "Klik på byens prik på kortet.",
+      wrong: "Ikke helt: det er ikke {name}. Prøv igen!", pulse: "Kig efter den blinkende prik. (+10 s)",
+      allFound: "Alle fundet!", everyCity: "Alle byerne er på kortet.",
+      firstBest: "Første gennemførte runde. Kan du slå den?", newBest: "Ny personlig rekord! Den forrige: {best}", best: "Din rekord: {best}",
+      stars: "{n} af 3 stjerner", locFound: "{name} (fundet)", location: "Sted {n} på kortet"
+    }
+  };
+  let lang = "";
+  try { lang = localStorage.getItem(LANG_KEY) || ""; } catch (e) { /* storage unavailable */ }
+  if (lang !== "da" && lang !== "en") lang = (navigator.language || "").toLowerCase().startsWith("da") ? "da" : "en";
+  function tr(key, vars) {
+    let text = STR[lang][key] ?? STR.en[key];
+    if (vars) text = text.replace(/\{(\w+)\}/g, (m, k) => vars[k]);
+    return text;
+  }
+  // In Danish, cities go by their Danish names (København, not Copenhagen).
+  const cityName = (c) => (lang === "da" ? c.local : c.name);
+
   const HINT_PENALTY = 10000;
 
   const state = {
@@ -587,7 +641,7 @@
       const [x, y] = project(c.lonlat);
       const g = el("g", {
         class: "city", tabindex: "0", role: "button",
-        "aria-label": `Map location ${i + 1}`, "data-name": c.name
+        "aria-label": tr("location", { n: i + 1 }), "data-name": c.name
       }, dotLayer);
       el("circle", { cx: x, cy: y, r: 7, class: "halo" }, g);
       el("circle", { cx: x, cy: y, r: 18, class: "hit" }, g);
@@ -608,12 +662,12 @@
       state.found.add(city.name);
       node.classList.remove("wrong", "hinted");
       node.classList.add("correct", "just");
-      node.setAttribute("aria-label", `${city.name} (found)`);
+      node.setAttribute("aria-label", tr("locFound", { name: cityName(city) }));
       node.removeAttribute("tabindex");
       setTimeout(() => node.classList.remove("just"), 500);
 
       const [x, y] = project(city.lonlat);
-      text(city.name, x + city.dx, y + city.dy, "city-label", city.anchor, labelLayer);
+      text(cityName(city), x + city.dx, y + city.dy, "city-label", city.anchor, labelLayer).dataset.city = city.name;
       addFound(city);
       nextCity();
     } else {
@@ -627,7 +681,7 @@
       ui.prompt.classList.remove("shake");
       void ui.prompt.offsetWidth;
       ui.prompt.classList.add("shake");
-      ui.hint.textContent = `Not quite — that's not ${state.current.name}. Try again!`;
+      ui.hint.textContent = tr("wrong", { name: cityName(state.current) });
     }
   }
 
@@ -635,8 +689,8 @@
     const empty = ui.found.querySelector(".empty");
     if (empty) empty.remove();
     const li = document.createElement("li");
-    li.textContent = city.name;
-    li.title = city.local;
+    li.textContent = cityName(city);
+    li.dataset.city = city.name;
     ui.found.appendChild(li);
   }
 
@@ -651,10 +705,7 @@
     state.current = state.queue.shift() || null;
     if (!state.current) return finish();
 
-    ui.city.textContent = state.current.name;
-    ui.hint.textContent = state.current.local !== state.current.name
-      ? `Danish: ${state.current.local}. Click its dot on the map.`
-      : "Click the matching dot on the map.";
+    renderPrompt();
     ui.prompt.classList.remove("enter");
     void ui.prompt.offsetWidth;
     ui.prompt.classList.add("enter");
@@ -672,7 +723,7 @@
     node.classList.add("hinted");
     clearTimeout(node._hintTimer);
     node._hintTimer = setTimeout(() => node.classList.remove("hinted"), 3400);
-    ui.hint.textContent = "Look for the pulsing dot. (+10 s)";
+    ui.hint.textContent = tr("pulse");
   }
 
   function finish() {
@@ -693,19 +744,18 @@
     ui.rAcc.textContent = `${accuracy}%`;
     ui.rHints.textContent = state.hints;
     ui.stars.innerHTML = "★".repeat(stars) + `<span class="off">${"★".repeat(3 - stars)}</span>`;
-    ui.stars.setAttribute("aria-label", `${stars} of 3 stars`);
+    ui.stars.setAttribute("aria-label", tr("stars", { n: stars }));
 
     let best = null;
     try { best = Number(localStorage.getItem(BEST_KEY)) || null; } catch (e) { /* storage unavailable */ }
     if (best === null || ms < best) {
-      ui.rBest.textContent = best === null ? "First completed run. Can you beat it?" : `New personal best! Previous: ${formatTime(best)}`;
+      ui.rBest.textContent = best === null ? tr("firstBest") : tr("newBest", { best: formatTime(best) });
       try { localStorage.setItem(BEST_KEY, String(Math.round(ms))); } catch (e) { /* ignore */ }
     } else {
-      ui.rBest.textContent = `Personal best: ${formatTime(best)}`;
+      ui.rBest.textContent = tr("best", { best: formatTime(best) });
     }
 
-    ui.city.textContent = "All found!";
-    ui.hint.textContent = "Every city is on the map.";
+    renderPrompt();
     ui.hintBtn.disabled = true;
 
     setTimeout(() => {
@@ -741,7 +791,12 @@
       misses: 0, hints: 0, penalty: 0, startedAt: 0, finishedAt: 0, done: false
     });
     ui.misses.textContent = "0";
-    ui.found.innerHTML = '<li class="empty">None yet. Good luck!</li>';
+    ui.found.innerHTML = "";
+    const empty = document.createElement("li");
+    empty.className = "empty";
+    empty.dataset.t = "noneYet";
+    empty.textContent = tr("noneYet");
+    ui.found.appendChild(empty);
     ui.hintBtn.disabled = false;
     ui.overlay.classList.remove("show");
     ui.confetti.innerHTML = "";
@@ -757,6 +812,34 @@
   svg.appendChild(dotLayer);
   svg.appendChild(labelLayer);
 
+  function renderPrompt() {
+    if (state.done) {
+      ui.city.textContent = tr("allFound");
+      ui.hint.textContent = tr("everyCity");
+    } else if (state.current) {
+      const c = state.current;
+      ui.city.textContent = cityName(c);
+      ui.hint.textContent = lang === "en" && c.local !== c.name ? tr("danishName", { local: c.local }) : tr("clickHint");
+    }
+  }
+  function applyLang() {
+    document.documentElement.lang = lang;
+    document.title = tr("title");
+    document.querySelectorAll("[data-t]").forEach((n) => { n.textContent = tr(n.dataset.t); });
+    document.querySelectorAll("[data-th]").forEach((n) => { n.innerHTML = tr(n.dataset.th); });
+    document.querySelectorAll("[data-t-title]").forEach((n) => { n.title = tr(n.dataset.tTitle); });
+    document.querySelectorAll("[data-t-aria]").forEach((n) => { n.setAttribute("aria-label", tr(n.dataset.tAria)); });
+    document.querySelectorAll(".lang-switch button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
+    const byName = new Map(CITIES.map((c) => [c.name, c]));
+    document.querySelectorAll("[data-city]").forEach((n) => { n.textContent = cityName(byName.get(n.dataset.city)); });
+    renderPrompt();
+  }
+  document.querySelectorAll(".lang-switch button").forEach((b) => b.addEventListener("click", () => {
+    lang = b.dataset.lang;
+    try { localStorage.setItem(LANG_KEY, lang); } catch (e) { /* storage unavailable */ }
+    applyLang();
+  }));
+
   ui.hintBtn.addEventListener("click", useHint);
   ui.restart.addEventListener("click", reset);
   ui.playAgain.addEventListener("click", reset);
@@ -765,6 +848,7 @@
   });
 
   reset();
+  applyLang();
 })();
 </script>
 </body>
