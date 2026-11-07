@@ -44,17 +44,13 @@ To add another variant, add an entry to `variants.py`. Stations where `region()`
 
 ## Levels ("Danmark på kortet")
 
-Built into `games-private/` (not `public/`), served by the website's routes:
+Built into `games-private/` (not `public/`) and imported by the website's routes as JSON, so they are bundled into the server code on any host:
 
 ```sh
-D=/tmp/rail-data
-python3 -I tools/danish-rail-finder/build.py $D tools/danish-rail-finder/template.html games-private/level1.html level1
-for n in 2 3 4 5 6 7 8; do
-  python3 -I tools/danish-rail-finder/build.py $D tools/danish-rail-finder/template.html games-private/level$n.html level$n games-private/level$n.json
-done
+python3 -I tools/danish-rail-finder/build_levels.py /tmp/rail-data games-private
 ```
 
-The 5th argument splits the map data into a JSON file. The paid level's page then has no map in it: it fetches `/api/games/level-data`, which answers only a device that owns the level. Level 1 (free) keeps its data in the page.
+For each paid level the map data is a separate file (`level<n>.json`). The level's page has no map in it: it fetches `/api/games/level-data`, which answers only a device that owns the level. Level 1 (free) keeps its data in the page.
 
 The shop, codes, device limit and Stripe checkout are in `lib/games/` and `app/games/`, `app/api/games/`; the database is in `supabase/migrations/20261107_games_purchases.sql`. Setup: see the "Danmark på kortet" section of `.env.local.example`.
 

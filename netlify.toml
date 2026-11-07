@@ -1,0 +1,9 @@
+# Netlify: builds the Next.js site. Netlify detects Next.js and adds its runtime
+# automatically. Set the secret settings (Stripe, Supabase, seller details) in
+# Netlify: Site configuration → Environment variables (see .env.local.example).
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "20"

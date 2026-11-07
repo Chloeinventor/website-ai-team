@@ -1,4 +1,4 @@
-import { canPlay, parseLevel, readLevelFile, visitorFrom } from "@/lib/games/access";
+import { canPlay, parseLevel, readLevelData, visitorFrom } from "@/lib/games/access";
 import { json } from "@/lib/games/http";
 
 export const runtime = "nodejs";
@@ -11,7 +11,7 @@ export async function GET(request: Request) {
   const v = visitorFrom(request);
   const { ok, owned } = await canPlay(v, n);
   if (!ok) return json({ error: "Not unlocked" }, { status: 403 });
-  return new Response(await readLevelFile(n, "json"), {
+  return new Response(await readLevelData(n), {
     headers: {
       "Content-Type": "application/json",
       "Cache-Control": "private, no-store",

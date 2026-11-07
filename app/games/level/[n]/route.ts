@@ -1,4 +1,4 @@
-import { canPlay, parseLevel, readLevelFile, visitorCookies, visitorFrom } from "@/lib/games/access";
+import { canPlay, parseLevel, readLevelPage, visitorCookies, visitorFrom } from "@/lib/games/access";
 import { html, redirect } from "@/lib/games/http";
 
 export const runtime = "nodejs";
@@ -13,5 +13,5 @@ export async function GET(request: Request, { params }: { params: { n: string } 
   const { ok } = await canPlay(v, n);
   if (!ok) return redirect(`/games/levels?level=${n}`, request, cookies);
   // The paid pages hold no map data: it is fetched from /api/games/level-data.
-  return html(await readLevelFile(n, "html"), { cookies, cache: n === 1 ? "public, max-age=300" : "private, no-store" });
+  return html(await readLevelPage(n), { cookies, cache: n === 1 ? "public, max-age=300" : "private, no-store" });
 }

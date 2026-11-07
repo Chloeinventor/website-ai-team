@@ -4,9 +4,6 @@
  * those codes is active, covers the level and has this device registered, so a
  * copied code stops working once its device limit is reached.
  */
-import { promises as fs } from "node:fs";
-import path from "node:path";
-
 import { FREE_LEVEL, levelsOf } from "./catalog";
 import { isDeviceId, newDeviceId, normalizeCode } from "./code";
 import { deviceProducts, isDbConfigured } from "./db";
@@ -80,7 +77,17 @@ export async function canPlay(v: Visitor, n: number): Promise<{ ok: boolean; own
   return { ok: n === FREE_LEVEL || owned.includes(n), owned };
 }
 
-/** The built level files live outside public/, so only these routes can serve them. */
-export async function readLevelFile(n: number, kind: "html" | "json"): Promise<string> {
-  return fs.readFile(path.join(process.cwd(), "games-private", `level${n}.${kind}`), "utf8");
+/**
+ * The built levels (tools/danish-rail-finder/build_levels.py) live in
+ * games-private/, not public/. They are imported as JSON, so they are bundled
+ * into the server code on any host and only these routes can hand them out.
+ */
+export async function readLevelPage(n: number): Promise<string> {
+  const mod = await import(`@/games-private/level${n}.page.json`);
+  return (mod.default ?? mod).html as string;
+}
+
+export async function readLevelData(n: number): Promise<string> {
+  const mod = await import(`@/games-private/level${n}.json`);
+  return JSON.stringify(mod.default ?? mod);
 }
