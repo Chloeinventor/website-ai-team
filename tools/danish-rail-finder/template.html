@@ -181,6 +181,7 @@
   .regions button span { font-weight: 500; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
   .setup-sub { margin: 4px 0 6px; font-size: 12px; font-weight: 700; color: var(--muted); }
   .regions button:disabled { opacity: .45; }
+  .regions[hidden], .setup-row select[hidden] { display: none; }
   .regions button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
   .setup-row { display: flex; gap: 8px; align-items: center; }
   .setup-row label { font-size: 13px; color: var(--muted); flex: none; }
@@ -291,6 +292,18 @@
   .result-grid span { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
   .best { font-size: 13px; margin: -8px 0 16px !important; }
   .victory-actions { display: flex; gap: 8px; }
+  /* Level series: the next level and the bundle, shown at the end of a round. */
+  .upsell { display: flex; flex-direction: column; gap: 8px; margin: 0 0 14px; text-align: left; }
+  .upsell[hidden] { display: none; }
+  .upsell-kicker { margin: 0 !important; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--accent) !important; }
+  .upsell a { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 13px 14px; border-radius: 12px; text-decoration: none; font-weight: 700; }
+  .upsell a[hidden] { display: none; }
+  .upsell-next { background: var(--accent); color: #fff; }
+  .upsell-next:hover { filter: brightness(1.08); }
+  .upsell-bundle { border: 1px solid var(--line); color: var(--ink); background: var(--bg); }
+  .upsell-bundle:hover { border-color: var(--muted); }
+  .upsell b { white-space: nowrap; }
+  .upsell-note { margin: 0 !important; font-size: 12px; text-align: center; }
   .victory-actions button { flex: 1; padding: 13px; font-size: 15px; }
 
   .confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 11; }
@@ -438,7 +451,7 @@
 </main>
 
 <footer>
-  <a href="index.html" data-t="allGames">← All map games</a><br>
+  <a href="index.html" id="home-link" data-t="allGames">← All map games</a><br>
   <span data-t="privacy">No login, no tracking: your anonymous player name, settings and best times are stored only on this device.</span><br>
   <span id="f-credits">__CREDITS__</span>
   <span data-th="coastline">Coastline © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors (ODbL), via geo-maps.</span>
@@ -462,6 +475,12 @@
       <div><b id="r-hints">0</b><span data-t="rHints">Hints</span></div>
     </div>
     <p class="best" id="r-best"></p>
+    <div class="upsell" id="upsell" hidden>
+      <p class="upsell-kicker" data-t="upNext">Keep going</p>
+      <a class="upsell-next" id="up-next" target="_top" rel="noopener" href="#"><span id="up-next-name"></span><b id="up-next-price"></b></a>
+      <a class="upsell-bundle" id="up-bundle" target="_top" rel="noopener" href="#"><span data-t="upBundle">All levels</span><b id="up-bundle-price"></b></a>
+      <p class="upsell-note" data-t="upNote">Opens the level on itch.io, where you can buy it.</p>
+    </div>
     <div class="victory-actions">
       <button type="button" id="review-btn" data-t="viewMap">View map</button>
       <button type="button" class="primary" id="again-btn" data-t="playAgain">Play again</button>
@@ -542,6 +561,11 @@
       firstBest: "First clean run in this mode. Can you beat it?", newBest: "New personal best! Previous: {best}",
       best: "Personal best for this mode: {best}",
       inhabitants: "≈ {n} inhabitants", popUnknown: "population not listed",
+      oneGuessMiss: "That's <b>{name}</b>. {target} was {dist} {dir} of there, now marked in orange.",
+      nearMiss1: "{found} of {total} found on the first guess. Your one miss was only {avg} away.",
+      nearMissN: "{found} of {total} found on the first guess. Your {n} misses were only {avg} away on average.",
+      perfect: "All {total} found on the first guess!",
+      upNext: "Keep going", upBundle: "All levels", upNote: "Opens the level on itch.io, where you can buy it.",
       dirs: ["north", "northeast", "east", "southeast", "south", "southwest", "west", "northwest"],
       kinds: { main: "main line", regional: "regional line", local: "local line" }
     },
@@ -578,6 +602,11 @@
       firstBest: "Første runde uden hjælp i denne spilform. Kan du slå den?", newBest: "Ny personlig rekord! Den forrige: {best}",
       best: "Din rekord i denne spilform: {best}",
       inhabitants: "≈ {n} indbyggere", popUnknown: "indbyggertal ikke oplyst",
+      oneGuessMiss: "Det er <b>{name}</b>. {target} lå {dist} {dir} for den, nu markeret med orange.",
+      nearMiss1: "{found} af {total} fundet i første forsøg. Dit ene forkerte gæt var kun {avg} fra målet.",
+      nearMissN: "{found} af {total} fundet i første forsøg. Dine {n} forkerte gæt var i gennemsnit kun {avg} fra målet.",
+      perfect: "Alle {total} fundet i første forsøg!",
+      upNext: "Fortsæt", upBundle: "Alle niveauer", upNote: "Åbner niveauet på itch.io, hvor du kan købe det.",
       dirs: ["nord", "nordøst", "øst", "sydøst", "syd", "sydvest", "vest", "nordvest"],
       kinds: { main: "hovedstrækning", regional: "regionalbane", local: "lokalbane" }
     }
@@ -846,6 +875,11 @@
     if (!list.length) return;
     let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
     list.forEach((s) => { x0 = Math.min(x0, s.x); y0 = Math.min(y0, s.y); x1 = Math.max(x1, s.x); y1 = Math.max(y1, s.y); });
+    // A place in the Bornholm box brings the whole box into view.
+    const f = DATA.inset;
+    if (f && list.some((s) => s.x >= f.x && s.x <= f.x + f.w && s.y >= f.y && s.y <= f.y + f.h)) {
+      x0 = Math.min(x0, f.x); y0 = Math.min(y0, f.y); x1 = Math.max(x1, f.x + f.w); y1 = Math.max(y1, f.y + f.h);
+    }
     // A round with only a place or two still shows its surroundings.
     const minSpan = DATA.meta.revealKm * 2 * unitsPerKm;
     const grow = (a, b) => { const m = (a + b) / 2, h = Math.max(b - a, minSpan) / 2; return [m - h, m + h]; };
@@ -1063,6 +1097,10 @@
       if (AREAS.some((a) => a.id === p.area)) game.area = p.area;
       if (["10", "20", "50", "all"].includes(p.count)) game.count = p.count;
     } catch (e) { /* storage unavailable */ }
+    if (DATA.meta.fixedCount) {
+      game.count = DATA.meta.fixedCount;
+      ui.count.hidden = $("count-label").hidden = true;
+    }
     ui.count.value = game.count;
   }
   function savePrefs() {
@@ -1088,6 +1126,10 @@
   AREAS.forEach((a) => filterButton(ui_areas, a, "area"));
   if (AREAS.length) {
     ui_areas.hidden = $("areas-label").hidden = $("regions-label").hidden = false;
+  }
+  if (REGIONS.length === 1) {
+    // A level is one pool of places: nothing to choose between.
+    ui.regions.hidden = $("regions-label").hidden = true;
   }
   // Counts follow the other filter, so each button shows what you'd play.
   function renderFilters() {
@@ -1223,7 +1265,7 @@
     stopClock();
     cancelAnimationFrame(anim);
     Object.assign(game, {
-      queue: [], total: 0, current: null, found: 0, skipped: 0, misses: 0, hints: 0,
+      queue: [], total: 0, current: null, found: 0, skipped: 0, misses: 0, hints: 0, missKm: [],
       hintLevel: 0, penalty: 0, startedAt: 0, finishedAt: 0, done: false
     });
     labels.slice().forEach((L) => removeLabel(L.s));
@@ -1264,6 +1306,8 @@
     ui.prompt.classList.add("enter");
   }
 
+  const fmtKm = (km) => km < 1 ? `${Math.round(km * 1000)} m`
+    : `${km < 10 ? km.toFixed(1).replace(".", isDa() ? "," : ".") : Math.round(km)} km`;
   const wrongTimers = new Map();
   function guess(s) {
     if (s.state === "found" || s.state === "skipped") {
@@ -1286,6 +1330,7 @@
     }
     game.misses++;
     ui.misses.textContent = game.misses;
+    const km = distanceKm(s, target);
     setState(s, "wrong");
     addLabel(s, "temp");
     clearTimeout(wrongTimers.get(s));
@@ -1293,10 +1338,18 @@
       if (s.state === "wrong") setState(s, "");
       if (s.label && s.label.kind === "temp") { removeLabel(s); layoutLabels(); }
     }, 1800));
-    const km = distanceKm(s, target);
-    const dist = km < 1 ? `${Math.round(km * 1000)} m`
-      : `${km < 10 ? km.toFixed(1).replace(".", isDa() ? "," : ".") : Math.round(km)} km`;
-    ui.hint.innerHTML = tr("miss", { name: s.name, target: target.name, dist: dist, dir: direction(s, target) });
+    if (DATA.meta.oneGuess) {
+      // One guess per place: show where it really was and move on.
+      game.missKm.push(km);
+      setState(target, "skipped");
+      addLabel(target, "skipped");
+      game.skipped++;
+      ui.hintBtn.disabled = false;
+      nextStation();
+      if (!game.done) ui.hint.innerHTML = tr("oneGuessMiss", { name: s.name, target: target.name, dist: fmtKm(km), dir: direction(s, target) });
+      return;
+    }
+    ui.hint.innerHTML = tr("miss", { name: s.name, target: target.name, dist: fmtKm(km), dir: direction(s, target) });
     ui.prompt.classList.remove("shake");
     void ui.prompt.offsetWidth;
     ui.prompt.classList.add("shake");
@@ -1370,11 +1423,20 @@
     const roundRegion = AREAS.length && game.area !== "all"
       ? tr("inArea", { region: regionName(game.region), area: areaName(game.area) }) : regionName(game.region);
     ui.vSub.textContent = `${roundRegion}: ${countText(game.total)}` + (game.skipped ? tr("shownToYou", { n: game.skipped }) : ".");
+    if (DATA.meta.oneGuess) {
+      const n = game.missKm.length, avg = n ? game.missKm.reduce((a, b) => a + b, 0) / n : 0;
+      ui.vSub.textContent = !n ? tr("perfect", { total: game.total })
+        : tr(n === 1 ? "nearMiss1" : "nearMissN", { found: game.found, total: game.total, n: n, avg: fmtKm(avg) });
+    }
+    renderUpsell();
 
     const key = `${DATA.meta.key}:best:${game.region}:` + (AREAS.length ? `${game.area}:` : "") + game.count;
     let best = null;
     try { best = Number(localStorage.getItem(key)) || null; } catch (e) { /* ignore */ }
-    if (game.skipped) {
+    if (DATA.meta.oneGuess && game.skipped) {
+      // One guess per place: a best time only counts for a perfect round.
+      ui.rBest.textContent = best ? tr("best", { best: fmt(best) }) : "";
+    } else if (game.skipped) {
       ui.rBest.textContent = best ? tr("bestSkipped", { best: fmt(best) }) : tr("noBestSkipped");
     } else if (best === null || ms < best) {
       ui.rBest.textContent = best === null ? tr("firstBest") : tr("newBest", { best: fmt(best) });
@@ -1433,6 +1495,36 @@
     view.y = cy - view.h / 2;
     applyView();
   }).observe(svg);
+  // Level series: link the next level and the bundle on itch.io.
+  const NEXT = DATA.meta.next, BUNDLE = DATA.meta.bundle, HOME = DATA.meta.home;
+  function renderUpsell() {
+    const box = $("upsell");
+    if (!NEXT && !BUNDLE) return;
+    box.hidden = false;
+    const nextLink = $("up-next");
+    nextLink.hidden = !NEXT;
+    if (NEXT) {
+      nextLink.href = NEXT.url;
+      $("up-next-name").textContent = NEXT[lang];
+      $("up-next-price").textContent = NEXT.price[lang];
+    }
+    if (BUNDLE) {
+      $("up-bundle").href = BUNDLE.url;
+      $("up-bundle-price").textContent = BUNDLE.price[lang];
+    }
+    ui.again.classList.remove("primary");
+  }
+  if (HOME) {
+    const home = $("home-link");
+    home.href = HOME.url;
+    home.target = "_top";
+    home.removeAttribute("data-t");
+  }
+  // Inside itch.io's game frame, footer links (other than "All levels") open in a new tab.
+  function frameLinks() {
+    if (HOME) document.querySelectorAll("footer a:not(#home-link)").forEach((a) => { a.target = "_blank"; a.rel = "noopener"; });
+  }
+
   function renderDoneText() {
     ui.kicker.textContent = tr("roundOver");
     ui.name.textContent = tr("foundOf", { found: game.found, total: game.total });
@@ -1464,6 +1556,9 @@
       ui.hintBtn.textContent = tr(game.hintLevel >= 1 ? "showDot" : "hint");
     }
     if (factShown && !fact.box.hidden) showFact(factShown[0], factShown[1]);
+    if (HOME) $("home-link").textContent = HOME[lang];
+    frameLinks();
+    if (!$("upsell").hidden) renderUpsell();
   }
   document.querySelectorAll(".lang-switch button").forEach((b) => b.addEventListener("click", () => {
     lang = b.dataset.lang;

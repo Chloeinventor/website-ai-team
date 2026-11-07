@@ -44,3 +44,20 @@ Danish City Finder (`public/games/danish-city-finder.html`) is hand-written, not
 The build stops and lists the names if a line refers to a station it can't find.
 
 To add another variant, add an entry to `variants.py`. Stations where `region()` returns `None` are left out of the game. Any of those that are next to a playable station still appear as grey context dots.
+
+## itch.io levels ("Danmark på kortet")
+
+`variants.py` also defines `level1` to `level8`: the games cut into levels from easy to hard, with no place in two levels.
+
+- Level 1 is free, with one guess per town and 10 towns per round.
+- Levels 2–8 are 39 kr each, or 149 kr for the bundle.
+
+Each level's end screen links to the next level and to the bundle on itch.io.
+
+`package_itch.py` builds all eight levels into ready-to-upload ZIPs:
+
+```sh
+ITCH_USER=<your itch.io name> ITCH_BUNDLE=<bundle url> python3 -I tools/danish-rail-finder/package_itch.py /tmp/rail-data dist/itch
+```
+
+`ITCH_PAGES.md` has each level's project URL, the upload settings and the page texts in English and Danish.

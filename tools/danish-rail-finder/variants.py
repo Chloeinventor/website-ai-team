@@ -301,3 +301,117 @@ VARIANTS["places"]["da"] = {
                    "minor": ["Mindre by", "under 10.000 indbyggere"]},
     "admin": _ADMIN_DA,
 }
+
+
+# ---------------------------------------------------------------- itch.io levels
+# "Danmark på kortet" sold on itch.io as levels, easy to hard. Level 1 is free;
+# levels 2-8 are 39 kr each, or 149 kr for all of them as a bundle. No place is
+# in two levels, so nobody pays twice for the same towns or stations.
+# Each level is its own itch.io project at https://<ITCH_USER>.itch.io/<slug>.
+import copy
+import os
+
+ITCH_USER = os.environ.get("ITCH_USER", "YOUR-ITCH-NAME")
+ITCH_BUNDLE = os.environ.get("ITCH_BUNDLE", f"https://{ITCH_USER}.itch.io")
+SERIES = "Danmark på kortet"
+PRICE = {"en": "39 kr", "da": "39 kr."}
+BUNDLE_PRICE = {"en": "149 kr", "da": "149 kr."}
+
+def itch_url(n):
+    return f"https://{ITCH_USER}.itch.io/danmark-paa-kortet" + ("" if n == 1 else f"-{n}")
+
+LEVELS = [
+    # n, base variant, short name (en, da), what it holds (en, da)
+    (1, "places", ("Capital Region: major towns", "Region Hovedstaden: større byer"),
+        ("22 major towns, one guess each", "22 større byer, ét gæt hver")),
+    (2, "places", ("Denmark's cities", "Danmarks storbyer"),
+        ("The 18 cities with 40,000+ people", "De 18 byer med over 40.000 indbyggere")),
+    (3, "towns", ("Famous towns and their stories", "Kendte byer og deres historier"),
+        ("72 towns, each with a fact card", "72 byer, hver med et faktakort")),
+    (4, "places", ("Major towns across Denmark", "Større byer i hele Danmark"),
+        ("34 major towns outside the Capital Region", "34 større byer uden for Region Hovedstaden")),
+    (5, "denmark", ("Copenhagen S-tog & Metro", "København: S-tog og metro"),
+        ("122 S-tog and Metro stops", "122 S-togs- og metrostationer")),
+    (6, "sjaelland", ("Zealand, Lolland & Falster stations", "Stationer på Sjælland, Lolland og Falster"),
+        ("92 train and local-line stations outside Copenhagen", "92 tog- og lokalbanestationer uden for København")),
+    (7, "denmark", ("Jutland & Funen stations", "Stationer i Jylland og på Fyn"),
+        ("179 train and light-rail stations", "179 tog- og letbanestationer")),
+    (8, "places", ("Minor towns of Denmark", "Danmarks mindre byer"),
+        ("268 towns with under 10,000 people", "268 byer med under 10.000 indbyggere")),
+]
+
+def _rail_level(keep):
+    def region(lat, lon, city):
+        r = _denmark_region(lat, lon, city)
+        return "lvl" if r in keep else None
+    return region
+
+def _level_variant(n, base, name, holds):
+    v = copy.deepcopy(VARIANTS[base])
+    da = v["da"]
+    nxt = next((l for l in LEVELS if l[0] == n + 1), None)
+    title = (f"Level {n} · {name[0]}", f"Niveau {n} · {name[1]}")
+    v["meta"].update({
+        "title": title[0],
+        "tagline": f"{SERIES}: {holds[0]}",
+        "description": f"{SERIES}, level {n}: {holds[0]}. A Danish geography game: find each place on the map.",
+        "key": f"danmark-paa-kortet-{n}",
+        "footer": f"{SERIES} is a series of Danish map games, from easy to hard."
+                  f" Level 1 is free; every other level is {PRICE['en']}, or {BUNDLE_PRICE['en']} for all of them.",
+        "level": n,
+        "home": {"url": f"https://{ITCH_USER}.itch.io", "en": "← All levels", "da": "← Alle niveauer"},
+        "next": nxt and {"url": itch_url(nxt[0]), "en": f"Level {nxt[0]} · {nxt[2][0]}", "da": f"Niveau {nxt[0]} · {nxt[2][1]}",
+                         "price": PRICE},
+        "bundle": {"url": ITCH_BUNDLE, "price": BUNDLE_PRICE},
+    })
+    da.update({
+        "title": title[1],
+        "tagline": f"{SERIES}: {holds[1]}",
+        "footer": f"{SERIES} er en serie danske kortspil, fra let til svær."
+                  f" Niveau 1 er gratis; hvert af de andre niveauer koster {PRICE['da']}, eller {BUNDLE_PRICE['da']} for dem alle.",
+    })
+    if base in ("places", "denmark", "sjaelland"):
+        # One pool per level: a single region, so the region buttons are hidden.
+        v["regions"] = [["all", name[0]]]
+        da["regions"] = {"all": name[1]}
+    return v
+
+for n, base, name, holds in LEVELS:
+    VARIANTS[f"level{n}"] = _level_variant(n, base, name, holds)
+
+# Which places each town level keeps (cat: city/major/minor, admin: region).
+VARIANTS["level1"]["places"]["keep"] = lambda cat, admin: cat == "major" and admin == "hov"
+VARIANTS["level2"]["places"]["keep"] = lambda cat, admin: cat == "city"
+VARIANTS["level4"]["places"]["keep"] = lambda cat, admin: cat == "major" and admin != "hov"
+VARIANTS["level8"]["places"]["keep"] = lambda cat, admin: cat == "minor"
+for n in (1, 2):  # small levels: no area filter
+    VARIANTS[f"level{n}"].pop("areas", None)
+    VARIANTS[f"level{n}"]["da"].pop("areas", None)
+VARIANTS["level4"]["areas"] = [a for a in VARIANTS["level4"]["areas"] if a[0] != "hov"]
+
+# Level 1, the free taster: 10 towns per round, one guess each, zoomed on the
+# Capital Region with Bornholm (Rønne) in a box in the Kattegat.
+VARIANTS["level1"].update({
+    "bbox": (11.45, 12.95, 55.5, 56.5),
+    "inset": {"minLon": 14.5, "shift": (-2.95, 1.15), "label": "Bornholm"},
+    "margin": {"dk": 460, "se": 460, "de": 460},
+    "eps": {"dk": 0.3, "se": 1.2, "de": 1.2},
+    "jumps": [["Copenhagen", 55.6, 12.3, 55.78, 12.68], ["North Zealand", 55.85, 12.0, 56.14, 12.65],
+              ["Bornholm", 56.1, 11.8, 56.5, 12.35]],
+})
+VARIANTS["level1"]["da"]["jumps"] = ["København", "Nordsjælland", "Bornholm"]
+VARIANTS["level1"]["meta"].update({"oneGuess": True, "fixedCount": "10", "hintKm": {"kbh": 10, "other": 10}, "revealKm": 5})
+
+# Rail levels: only their own stations are playable; neighbours stay grey.
+VARIANTS["level5"]["region"] = _rail_level({"kbh"})
+VARIANTS["level6"]["region"] = lambda lat, lon, city: "lvl" if _zealand_region(lat, lon, city) in ("nord", "midt", "syd") else None
+VARIANTS["level7"]["region"] = _rail_level({"fyn", "jyl"})
+VARIANTS["level5"].update({"bbox": (12.0, 12.75, 55.4, 56.1), "jumps": VARIANTS["denmark"]["jumps"][:2],
+                           "deco": [d for d in VARIANTS["sjaelland"]["deco"] if d[0] in ("Øresund", "Sverige", "Køge Bugt")]})
+VARIANTS["level5"]["da"]["jumps"] = VARIANTS["denmark"]["da"]["jumps"][:2]
+VARIANTS["level5"]["meta"]["hintKm"] = {"kbh": 8, "other": 8}
+VARIANTS["level7"].update({"bbox": (7.95, 11.25, 54.7, 57.78),
+                           "jumps": [j for j in VARIANTS["denmark"]["jumps"] if j[0] in ("Aarhus", "Odense")]})
+VARIANTS["level7"]["da"]["jumps"] = ["Aarhus", "Odense"]
+VARIANTS["level6"]["jumps"] = [j for j in VARIANTS["sjaelland"]["jumps"] if j[0] not in ("Copenhagen", "Inner city")]
+VARIANTS["level6"]["da"]["jumps"] = [j for j in VARIANTS["sjaelland"]["da"]["jumps"] if j not in ("København", "Indre by")]

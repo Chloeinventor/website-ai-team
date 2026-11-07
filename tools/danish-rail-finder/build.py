@@ -142,8 +142,11 @@ if V.get("kind") == "places":
         for p in same:
             near = min((b for b in big if b is not p), key=lambda b: km((p["lat"], p["lon"]), (b["lat"], b["lon"])))
             p["name"] = f'{p["name"]} (near {near["name"]})'
+    keep = P.get("keep")  # a level keeps only its own places
     for p in places:
         info = {"cat": category(p["pop"]), "pop": p["pop"], "admin": p["admin"]}
+        if keep and not keep(info["cat"], info["admin"]):
+            continue
         t = described.get(p["name"])
         if t and km((p["lat"], p["lon"]), (t[1], t[2])) < 6:
             info.update({"tags": t[4], "text": t[5]})
@@ -220,8 +223,12 @@ def ring_path_abs(pts):
 
 geo = json.load(open(os.path.join(DATA_DIR, "nbrs.json")))
 MARGIN = V["margin"]
-HOLE_MIN_AREA = float(os.environ.get("HOLE_MIN_AREA", "20"))
-MIN_AREA = float(os.environ.get("MIN_AREA", "0.6"))
+# Size cut-offs for lakes (holes) and islets, set in map units at the
+# all-of-Denmark scale and scaled to this map, so a closer map keeps the same
+# lakes and islands instead of showing every pond.
+AREA_SCALE = (K / 354.0) ** 2
+HOLE_MIN_AREA = float(os.environ.get("HOLE_MIN_AREA", "20")) * AREA_SCALE
+MIN_AREA = float(os.environ.get("MIN_AREA", "0.6")) * AREA_SCALE
 land_out = {"bh": ""}
 inset_pts = []
 npts = 0
